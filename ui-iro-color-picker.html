@@ -1,0 +1,801 @@
+<!--
+  Copyright 2018, Seth350
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!--
+***********************************************************************************
+** My Little UI Node
+** This is a template to help you create your very own ui node. This is meant as
+** a quickstart template that will show you what code is required and what code
+** and sections are free for you to change or make additions to.
+**
+***********************************************************************************
+-->
+
+
+<!--
+***********************************************************************************
+** !!REQUIRED!!
+** The .html file must ALWAYS begin with
+**  <script type="text/javascript">
+***********************************************************************************
+-->
+<script type="text/javascript">
+    iroOptionsState = [];
+    iroVisibilityOptions = {
+        '.node-input-option-component' : {
+            'picker' : ['.node-label-option-picker','.node-input-option-wheelAngle','.node-input-option-wheelLightness','.node-input-option-wheelDirection'],
+            'box' : ['.node-label-option-box','.node-input-option-boxHeight'],
+            'slider' : ['.node-label-option-type','.node-input-option-type',{}]
+        },
+        '.node-input-option-type' : {
+            'kelvin' : ['.node-input-option-minTemperature','.node-input-option-maxTemperature','.node-label-option-minmax']
+        }
+    };
+
+    function updateIroOptions(node) {
+        var options = $("#node-input-option-container").editableList('items');
+
+        function switchVisibility(option,classId,state) {
+            var done = [];
+//            debugger;
+            Object.keys(iroVisibilityOptions[classId]).forEach(element => {
+                iroVisibilityOptions[classId][element].forEach(classToSwitch => {
+                    if (!done.includes(classToSwitch)) {
+                        if (state) {
+                            option.find(classToSwitch).show();
+                        } else {
+                            option.find(classToSwitch).hide();
+                        }
+                        done.push(classToSwitch);
+                    }
+                });
+            });
+        }
+
+        function setIroOptionVisibility(index,option,classId,force = false) {
+            var component = option.find(classId);
+            if (force || component.val()!=iroOptionsState[index][classId]) {
+                Object.keys(iroVisibilityOptions[classId]).forEach(element => {
+                    if (element!=component.val()) {
+                        iroVisibilityOptions[classId][element].forEach(classToHide => {
+                            option.find(classToHide).hide();
+                            if (iroVisibilityOptions.hasOwnProperty(classToHide)) {
+                                switchVisibility(option,classToHide,false);
+                            }
+                        })
+                    } else {
+                        iroVisibilityOptions[classId][element].forEach(classToShow => {option.find(classToShow).show()})
+                    }
+                });
+                iroOptionsState[index][classId]=component.val();
+            }
+        }
+        
+        options.each(function (i) {
+            var option = $(this);
+            setIroOptionVisibility(i,option,".node-input-option-type",true); // force update on children
+            setIroOptionVisibility(i,option,".node-input-option-component");
+        });
+    }
+
+    function iroResizeList () {
+        var height = $("#dialog-form").height();
+        var formRows = $("#dialog-form>div:not(#node-iro-config-tabs-content)");
+        for (let i=0; i<formRows.size(); i++) {
+            height -= $(formRows[i]).outerHeight(true);
+        }
+        // resize editableList
+        tabRows = $(`#iro-tab-config>div:not(.node-input-option-container-row)`);
+        for (let i=0; i<tabRows.size(); i++) {
+            height -= $(tabRows[i]).outerHeight(true);
+        }
+        $("#node-input-option-container").editableList('height',height-30);
+    }
+
+    //*********************************************************************************
+// !!REQUIRED!!
+// This line is where you will register your node with a name and configuration.
+// Your name must be all lower-case letters and without spaces.
+// Your name must also begin with "ui_", otherwise it will not show up in the
+// dashboard tab under it's assigned group.
+// Should you need a space, use a hypen ( - ) instead.
+    RED.nodes.registerType('ui_iro-color-picker',{
+//*********************************************************************************
+//*********************************************************************************
+//                        !!!!!!!!!NOTE!!!!!!!!!
+// The following lines will determine your node's configuration and parameters.
+//
+//*********************************************************************************
+//*********************************************************************************
+// !!REQUIRED!!
+//
+// Node Category
+//
+// The category value should be left as 'dashboard', it does not need to be changed.
+        category: 'dashboard',
+//*********************************************************************************
+//*********************************************************************************
+// !!REQUIRED!!
+//
+// Node Color
+//
+// The color value determines what color your node will be in the flow editor.
+// Typically, all UI Nodes are rgb( 63, 173, 181), but you can freely edit this if
+// you prefer a different color.
+// TODO what about the preferred colors (https://nodered.org/docs/creating-nodes/appearance#background-colour)?
+// Please use the rgb format only.
+        color: 'rgb( 63, 173, 181)',
+//*********************************************************************************
+//*********************************************************************************
+//                        !!!!!!!!!NOTE!!!!!!!!!
+// In the following lines all the node properties are defined.  For every property you
+// can (optionally) specify a default value and whether the value is required or not.
+// When the standard 'required' is not sufficient, a custom validator function can be added.
+// Only properties in this 'defaults' list will be remembered in time.
+//
+// The first 5 properties are required in all ui nodes.
+//
+//*********************************************************************************
+// !!REQUIRED!!
+//
+// Node Default Settings
+//
+        defaults: {
+//*********************************************************************************
+//*********************************************************************************
+// !!REQUIRED!!
+//
+// Node Group
+//
+// The group value should be left as {type: 'ui_group', required:true}
+// There is no need to edit this line.
+            group: {type: 'ui_group', required:true},
+//*********************************************************************************
+//*********************************************************************************
+// !!REQUIRED!!
+//
+// Node Order
+//
+// The order value should be left as {value: 0}
+// There is no need to edit this line.
+            order: {value: 0},
+//*********************************************************************************
+//*********************************************************************************
+// !!REQUIRED!!
+//
+// Node Width
+//
+// Sets the default width of your node and how wide it will appear on the dashboard.
+// This setting is set from the Size setting in the node editor, within in the flow editor.
+// There is no need to edit these lines.
+            width: {
+                value: 0,
+                validate: function(v) {
+                    var valid = true
+                    var width = v||0;
+                    var currentGroup = $('#node-input-group').val()|| this.group;
+                    var groupNode = RED.nodes.node(currentGroup);
+                    valid = !groupNode || +width <= +groupNode.width;
+                    $("#node-input-size").toggleClass("input-error",!valid);
+                    return valid;
+                }},
+//*********************************************************************************
+//*********************************************************************************
+// !!REQUIRED!!
+//
+// Node Height
+//
+// Sets the default height of your node and how tall it will appear on the dashboard.
+// This setting is set from the Size setting in the node editor, within the flow editor.
+// There is no need to edit this line.
+            height: {value: 0},
+//*********************************************************************************
+//*********************************************************************************
+// !!REQUIRED!!
+//
+// Node Name
+//
+// Sets the default name of the node in the node editor.
+// Typically, this is left as {value:''}, and gives the user the option to enter
+// a name if they choose to do so.
+// There is no need to edit this line.
+            name: {value: ''},
+//*********************************************************************************
+//*********************************************************************************
+//                        !!!!!!!!!NOTE!!!!!!!!!
+// Until here we have covered the required default values every ui node must have,
+// and now we will start adding our own custom properties for our node.
+// For instance, you may want to set a default text color or some other custom property.
+// It is advised to specify a default value for as much properties as possible, to make sure
+// that users can setup your node up quick and easy.
+// Remember to place a comma at the end of each line of default values, except after the last line!
+// For example:
+// property1: {value: True}, <--comma
+// property2: {value: 'black'}, <--comma
+// property2: {value: ('2B' || NOT('2B')) }  <--NO comma
+// },
+//
+//********************************************************************************* BEGIN USER DEFINED DEFAULT VALUES
+            label: {value:'iro-color-picker'},
+            stateField: {value: 'payload'},
+            enableField: {value: 'enable'},            
+            layoutDirection: {value:'horizontal'},
+            widgetIndent: {value: '2'},
+            pickerType: {value: 'popupCG'},
+            pickerSize: {value: '100'},
+            backgroundDim: {value: '50'},
+            backgroundColor: {value: '#000000'},
+            backgroundVariable: {value: false},
+            components: {value: []},
+            format: {value: 'hex'},
+            outFormat: {value: 'rgb'},
+            dynOutput: {value: "input:end"},
+            passthru: {value: true},
+            topic: {value: 'topic', validate: (RED.validators.hasOwnProperty('typedInput')?RED.validators.typedInput('topicType'):function(v) { return true})},
+            topicType: {value: 'msg'},
+            iroColorValue: {value: '#000000ff'},
+        },
+//********************************************************************************* END USER DEFINED DEFAULT VALUES
+//*********************************************************************************
+// !!REQUIRED!!
+//
+// Inputs & Outputs
+//
+// The default number of inputs (0or1) and outputs (0-n) are set here.
+        inputs:1,
+        outputs:1,
+//*********************************************************************************
+//*********************************************************************************
+// !!REQUIRED!!
+//
+// Node Icon
+//
+// The default icon to display on your node in the flow editor. You may use any of
+// the icons found here: (TODO: Verify path to icon files with team.)
+        icon: "iro-color.png",
+//*********************************************************************************
+//*********************************************************************************
+// !!REQUIRED!!
+//
+// Node Name
+//
+// The name of your node as it would appear in the node selection side bar.
+// Lowercase & spaces are only permitted here.
+
+        paletteLabel:"iro.js color",
+
+//*********************************************************************************
+// !!REQUIRED!!
+//
+// Node Label
+//
+// The default label that will be displayed on your node in the flow editor.
+// Typically, set this to the same name of your node.
+// Spaces are permitted.
+        label: function() {
+            return this.name||"iro.js color picker";
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+//*********************************************************************************
+//*********************************************************************************
+// !!REQUIRED!!
+//
+// Node Edit Preparation
+//
+// While editing your node in the node editor within the flow editor, you may need
+// to perform some functions to verify the proper settings and syntax have been set.
+//
+// TODO: Verify with team on what this actually does.
+// Typically, you will not need to edit the oneditprepare.
+// You must atleast have your oneditprepare as such:
+//    oneditprepare: function() {
+//            $("#node-input-size").elementSizer({
+//               width: "#node-input-width",
+//                height: "#node-input-height",
+//                group: "#node-input-group"
+//            });
+//        }
+//
+        oneditprepare: function() {
+            var node = this;
+            $("#node-input-size").elementSizer({
+                width: "#node-input-width",
+                height: "#node-input-height",
+                group: "#node-input-group"
+            });
+
+            node.tabs = RED.tabs.create({
+                id: "node-iro-config-tabs",
+                onchange: function(tab) {
+                    $("#node-iro-config-tabs-content").children().hide();
+                    $("#" + tab.id).show();
+                    if (tab.id==='iro-tab-config') iroResizeList();
+                }
+            });     
+            node.tabs.addTab({
+                id: "iro-tab-general",
+                node: this,
+                label: this._("General")
+            });
+            node.tabs.addTab({
+                id: "iro-tab-config",
+                node: this,
+                label: this._("Components")
+            });
+            $('#node-input-option-container')
+                .css('min-height','250px').css('min-width','400px')
+                .editableList({
+                    sortable: true,
+                    removable: true,
+                    addButton: true,
+                    addItem: function(row, index, data) {
+                        iroOptionsState[index]={};
+                        if (!data.hasOwnProperty('options')) data.options={};
+                        $('<div><span>Component</span></div>').css('display','inline-block').css('width','80px').appendTo(row);
+                        var component = $('<select/>', {
+                            class: 'node-input-option-component',
+                            style: "margin-left:5px; width:70%"
+                        }).appendTo(row);
+                        component.append($('<option></option>').val('picker').text('picker (hue/saturation)'));
+                        component.append($('<option></option>').val('box').text('box (saturation/value) '));
+                        component.append($('<option></option>').val('slider').text('slider'));
+                        if (data.componentId) {
+                            component.val(data.componentId);
+                        }
+                        $('<br>').appendTo(row);
+                        $('<div><span>Border</span></div>').css('display','inline-block').css('width','80px').appendTo(row);
+                        var borderColor = $('<input/>', {
+                            class: 'node-input-option-borderColor',
+                            type: 'color',
+                            min: 0,
+                            max: 20,
+                            style: "margin-left:5px; width:20%;",
+                            placeholder: ""
+                        }).appendTo(row);
+                        if (data.options.borderColor) {
+                            borderColor.val(data.options.borderColor);
+                        }
+                        $('<div><span>Width</span></div>').css('display','inline-block').css('margin-left','5px').css('width','40px').appendTo(row);
+                        var borderWidth = $('<input/>', {
+                            class: 'node-input-option-borderWidth',
+                            type: 'number',
+                            min: 0,
+                            max: 20,
+                            style: "margin-left:5px; width:20%;",
+                            placeholder: ""
+                        }).appendTo(row);
+                        $('<div><span>&nbsp;px</span></div>')
+                            .css('display','inline-block')
+                            .appendTo(row);
+                        if (data.options.borderWidth) {
+                            borderWidth.val(data.options.borderWidth);
+                        }
+
+                        //wheelLightness
+                        $('<br>')                        
+                            .addClass('node-label-option-picker')
+                            .appendTo(row);
+                        $('<div><span>lightness</span></div>')
+                            .addClass('node-label-option-picker')
+                            .css('display','inline-block')
+                            .css('width','25%')
+                            .css('text-align','right')
+                            .appendTo(row);
+                        var wheelLightness = $('<select/>', {
+                            class: 'node-input-option-wheelLightness',
+                            style: "margin-left:5px; width:40%"
+                        }).appendTo(row);
+                        wheelLightness.append($('<option></option>').val('true').text('fade'));
+                        wheelLightness.append($('<option></option>').val('false').text('constant'));
+                        if (data.options.wheelLightness!==undefined) {
+                            wheelLightness.val((data.options.wheelLightness) ? 'true' : 'false');
+                        }
+
+                        //wheelAngle
+                        $('<br>')                        
+                            .addClass('node-label-option-picker')
+                            .appendTo(row);
+                        $('<div><span>starting angle</span></div>')
+                            .addClass('node-label-option-picker')
+                            .css('display','inline-block')
+                            .css('width','25%')
+                            .css('text-align','right')
+                            .appendTo(row);
+                        var wheelAngle = $('<input/>', {
+                            class: 'node-input-option-wheelAngle',
+                            type: 'number',
+                            min: 0,
+                            max: 359,
+                            style: "margin-left:5px; width:40%;",
+                            placeholder: "0°"
+                        }).appendTo(row);
+                        $('<div><span>&nbsp;°</span></div>')
+                            .addClass('node-label-option-picker')
+                            .css('display','inline-block')
+                            .appendTo(row);
+                        if (data.options.wheelAngle) {
+                            wheelAngle.val(data.options.wheelAngle);
+                        }
+
+                        //wheelDirection
+                        $('<br>')                        
+                            .addClass('node-label-option-picker')
+                            .appendTo(row);
+                        $('<div><span>direction</span></div>')
+                            .addClass('node-label-option-picker')
+                            .css('display','inline-block')
+                            .css('width','25%')
+                            .css('text-align','right')
+                            .appendTo(row);
+                        var wheelDirection = $('<select/>', {
+                            class: 'node-input-option-wheelDirection',
+                            style: "margin-left:5px; width:40%"
+                        }).appendTo(row);
+                        wheelDirection.append($('<option></option>').val('anticlockwise').text('anti clockwise'));
+                        wheelDirection.append($('<option></option>').val('clockwise').text('clockwise'));
+                        if (data.options.wheelDirection) {
+                            wheelDirection.val(data.options.wheelDirection);
+                        }
+
+                        //boxHeight
+                        $('<br>')                        
+                            .addClass('node-label-option-box')
+                            .appendTo(row);
+                        $('<div><span>box height</span></div>')
+                            .addClass('node-label-option-box')
+                            .css('display','inline-block')
+                            .css('width','25%')
+                            .css('text-align','right')
+                            .appendTo(row);
+                        var boxHeight = $('<input/>', {
+                            class: 'node-input-option-boxHeight',
+                            type: 'number',
+                            min: 0,
+                            max: 1000,
+                            style: "margin-left:5px; width:40%;",
+                            placeholder: "empty for square"
+                        }).appendTo(row);
+                        $('<div><span>&nbsp;px</span></div>')
+                            .addClass('node-label-option-box')
+                            .css('display','inline-block')
+                            .appendTo(row);
+                        if (data.options.boxHeight) {
+                            boxHeight.val(data.options.boxHeight);
+                        }                        
+
+                        //sliderTypes
+                        $('<br>')
+                            .addClass('node-label-option-type')
+                            .appendTo(row);
+                        $('<div><span>Slider shows</span></div>')
+                            .addClass('node-label-option-type')
+                            .css('display','inline-block')
+                            .css('width','80px')
+                            .appendTo(row);
+                        var type = $('<select/>', {
+                            class: 'node-input-option-type',
+                            style: "margin-left:5px; width:70%;"
+                        }).appendTo(row);
+                        type.append($('<option></option>').val('hue').text('hue'));
+                        type.append($('<option></option>').val('saturation').text('saturation'));
+                        type.append($('<option></option>').val('value').text('value'));
+                        type.append($('<option></option>').val('red').text('red'));
+                        type.append($('<option></option>').val('green').text('green'));
+                        type.append($('<option></option>').val('blue').text('blue'));
+                        type.append($('<option></option>').val('alpha').text('alpha'));
+                        type.append($('<option></option>').val('kelvin').text('color temperature'));
+                        if (data.options.sliderType) {
+                            type.val(data.options.sliderType);
+                        }
+                        
+                        //slider min
+                        $('<br>')                        
+                            .addClass('node-label-option-minmax')
+                            .appendTo(row);
+                        $('<div><span>min</span></div>')
+                            .addClass('node-label-option-minmax')
+                            .css('display','inline-block')
+                            .css('width','25%')
+                            .css('text-align','right')
+                            .appendTo(row);
+                        var min = $('<input/>', {
+                            class: 'node-input-option-minTemperature',
+                            type: 'number',
+                            style: "margin-left:5px; width:40%;",
+                            placeholder: "&nbsp;° Kelvin"
+                        }).appendTo(row);
+                        if (!data.options.minTemperature) data.options.minTemperature = 3000;
+                        min.val(data.options.minTemperature);
+
+                        //slider max
+                        $('<br>')
+                            .addClass('node-label-option-minmax')
+                            .appendTo(row);
+                        $('<div><span>max</span></div>')
+                            .addClass('node-label-option-minmax')
+                            .css('display','inline-block')
+                            .css('width','25%')
+                            .css('text-align','right')
+                            .appendTo(row);
+                        var max = $('<input/>', {
+                            class: 'node-input-option-maxTemperature',
+                            type: 'number',
+                            style: "margin-left:5px; width:40%;",
+                            placeholder: "&nbsp;° Kelvin"
+                        }).appendTo(row);
+                        if (!data.options.maxTemperature) data.options.maxTemperature = 6000;
+                        max.val(data.options.maxTemperature);
+                        updateIroOptions(this);
+                    }
+                });
+            $("#node-input-option-container").editableList('addItems', this.components);
+            $('#node-input-option-container').change(function(ev) {
+                updateIroOptions(this);
+            });
+            $('#node-input-topic').typedInput({
+                default: 'str',
+                typeField: $("#node-input-topicType"),
+                types: ['str','msg','flow','global']
+            });
+            $('#node-input-pickerType').change(function(ev) {
+                if ($('#node-input-pickerType').val().startsWith('popup')) {
+                    $("#node-options-picker").show();
+                } else {
+                    $("#node-options-picker").hide();
+                }
+            });
+            setTimeout(function() { node.tabs.resize();},0);
+        },
+        oneditsave: function() {
+            var components = $("#node-input-option-container").editableList('items');
+            var node = this;
+            node.components = [];
+            components.each(function (i) {
+                var slider = $(this);
+                var c = {options:{}};
+                c.componentId = slider.find(".node-input-option-component").val();
+                c.options.borderColor = slider.find(".node-input-option-borderColor").val();
+                c.options.borderWidth = Number(slider.find(".node-input-option-borderWidth").val());
+                if (c.options.borderWidth === NaN ) c.options.borderWidth=0;
+
+                switch (c.componentId) {
+                    case "picker":
+                        c.options.wheelLightness = (slider.find(".node-input-option-wheelLightness").val()==='true') ? true : false;
+                        c.options.wheelAngle = Number(slider.find(".node-input-option-wheelAngle").val());
+                        if (c.options.wheelAngle === NaN ) c.options.wheelAngle=0;
+                        c.options.wheelDirection = slider.find(".node-input-option-wheelDirection").val();
+                        break;
+                    case "box":
+                        c.options.boxHeight = Number(slider.find(".node-input-option-boxHeight").val());
+                        if (c.options.boxHeight === NaN || c.options.boxHeight<10) c.options.boxHeight=null;
+                        break;
+                        case "slider":
+                            c.options.sliderType = slider.find(".node-input-option-type").val();
+                            if (c.type=="kelvin") {
+                                c.options.minTemperature = Number(slider.find(".node-input-option-minTemperature").val());
+                                if (c.options.minTemperature === NaN ) c.options.minTemperature=3000;
+                                c.options.maxTemperature = Number(slider.find(".node-input-option-maxTemperature").val());
+                                if (c.options.maxTemperature === NaN ) c.options.maxTemperature=6000;
+                            }
+                            break;
+                }
+                node.components.push(c);
+            });
+            node.outputs = 1;
+        },
+        oneditresize: function(size) {
+            iroResizeList();
+        }
+    });
+</script>
+
+
+<!--
+***********************************************************************************
+** The following section creates the content of your node's config screen (to visualize
+** the node properties), which is displayed when you double click your node in the flow
+** editor.  The config screen contains both the required widgets (group dropdown, size
+** selector, name text box) and widgets to visualise your own custom properties (see
+** User Defined Default Values section above).
+***********************************************************************************
+-->
+
+<!--
+***********************************************************************************
+** This section must begin with:
+** It should be the same name that you are registering with Node-RED (see line #26).
+***********************************************************************************
+-->
+<script type="text/html" data-template-name="ui_iro-color-picker">
+    <!--***************************************************************************
+    ** !!REQUIRED!!
+    **
+    ** Group Dropdown
+    **
+    ** These lines of HTML code will define how the Group dropdown selector looks.
+    ** It is best that this stays as it is so that it is the same across all of the
+    ** nodes.
+    ** There is no need to edit these lines.
+    *******************************************************************************-->
+    <div class="form-row" id="template-row-group">
+        <label for="node-input-group"><i class="fa fa-table"></i> Group</span></label>
+        <input type="text" id="node-input-group">
+    </div>
+    <!--***************************************************************************-->
+    <!--***************************************************************************
+    ** !!REQUIRED!!
+    **
+    ** Size Selector
+    **
+    ** The following lines will define how the Size Selector looks.
+    ** It is best that this stays as it is so that it is the same across all of the
+    ** nodes.
+    ** There is no need to edit these lines.
+    *******************************************************************************-->
+
+    <div class="form-row" id="template-row-size">
+        <label><i class="fa fa-object-group"></i> Size</span></label>
+        <input type="hidden" id="node-input-width">
+        <input type="hidden" id="node-input-height">
+        <button class="editor-button" id="node-input-size"></button>
+    </div>
+    <!--***************************************************************************
+    **                              !!!!!NOTE!!!!!
+    ** The </br> tag will skip a line leaving a horizontal space. Use this to space
+    ** out your confiuration inputs into groups. Still, it is totally your preference.
+    ** The following </br> will seperate the Group dropdown and Size Selector from the
+    ** rest of our configuration.
+    *******************************************************************************-->
+
+    <!--***************************************************************************
+    ** </br>
+    **                             !!!!!!!!!NOTE!!!!!!!!!
+    **
+    ** Html elements to visualise our own custom node properties.
+    **
+    ** Here we will reference visualise the properties in the 'default' list (see lines #152 & #153):
+    ** textColor & textLabel
+    ** The id's of the html elements must EXACTLY match the names in the 'default' list, to make
+    ** sure that the html elements are automatically linked to the values of the properties in the
+    ** 'default' list.  For example the html id 'node-input-textColor' is linked to property 'textColor'.
+    **
+    ** A line like <label for="node-input-textColor"> simply defines a textual label for the html
+    ** input element with the correspoding id: <input type="text" id="node-input-textColor">
+    **
+    ** You may use any of the FontAwesome v4 icons, here: https://fontawesome.com/v4.7.0/icons/
+    **
+    ** The input 'type' specifies which kind of data is allowed in the input element.
+    ** For example type="color" means that the user can only enter color values (via a color picker).
+    ** Check here for a full list: https://www.w3schools.com/tags/att_input_type.asp
+    ******************************************************************************** BEGIN USER DEFINED DEFAULT INPUTS -->
+    <div class="form-row">
+        <ul style="min-width: 420px; margin-bottom: 20px;" id="node-iro-config-tabs"></ul>
+    </div>
+
+    <div id="node-iro-config-tabs-content" style="min-height: 170px;">
+        <div id="iro-tab-general" style="display:none">
+            <div class="form-row">
+                <label for="node-input-label"><i class="fa fa-i-cursor"></i> Label</span></label>
+                <input type="text" style="width: 40%;" id="node-input-label"/>
+                <label for="node-input-widgetIndent"><i class="fa fa-indent"></i> Indent</span></label>
+                <input type="number" style="width: 10%;" id="node-input-widgetIndent"/>
+            </div>
+            <div class="form-row">
+                <label for="node-input-pickerType"><i class="fa fa-tachometer"></i> Type</label>
+                <select id="node-input-pickerType">
+                    <option value="widget">as widget</option>
+                    <option value="popupCC">popup center click</option>
+                    <option value="popupCG">popup center group</option>
+                    <option value="popupCW">popup center window</option>
+                </select>
+            </div>
+            <div id="node-options-picker" style="display:none">
+                <div class="form-row">
+                    <label for="node-input-pickerSize" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-arrows-h"></i> Width</label>
+                    <input id="node-input-pickerSize" type="number" min=10 max=500 step=10 style="width: 15%;"/>
+                    <label for="node-input-pickerSize" style="width: 30%;"> % of group width</label>
+                </div>
+                <div class="form-row">
+                    <label for="node-input-backgroundColor" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-circle-o-notch "></i>&nbsp;Color</label>
+                    <input id="node-input-backgroundColor" type="color" style="width: 15%;"/>
+                    <input type="checkbox" checked id="node-input-backgroundVariable" style="display:inline-block; width:auto; vertical-align:middle;">
+                    <label style="width:auto" for="node-input-backgroundVariable"><i class="fa fa-fa-mouse-pointer "></i> picked</label>
+                    <label for="node-input-backgroundDim" style="width: 15%; text-align: right;"><i class="fa fa-undo"></i>&nbsp;&nbsp;Alpha</label>
+                    <input id="node-input-backgroundDim" type="number" min=0 max=100 step=1 style="width: 10%;"/>
+                    <label for="node-input-backgroundDim">&nbsp;%</label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label style="width:auto" for="node-input-passthru"><i class="fa fa-arrow-right"></i> If <code>msg</code> arrives on input, pass through to output: </label>
+                <input type="checkbox" checked id="node-input-passthru" style="display:inline-block; width:auto; vertical-align:top;">
+            </div>
+            <div class="form-row">
+                <label for="node-input-dynOutput"><i class="fa fa-envelope-o"></i> Send</label>
+                <select id="node-input-dynOutput" style="width:60%">
+                    <option value="input:end">when released/closed</option>
+                    <option value="input:move">on user interaction</option>
+                    <option value="color:change">on each color change</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label for="node-input-outFormat" style="padding-left: 25px; margin-right: -25px">Payload</label>
+                <select id="node-input-outFormat" style="width:60%">
+                    <option value="hexString">hex string "#ffffff"</option>
+                    <option value="hex8String">hex string with alpha "#ffffffff"</option>
+                    <option value="rgbString">RGB string "rgb(255,255,255)"</option>
+                    <option value="rgbaString">RGBA string with alpha "rgb(255,255,255,1)"</option>
+                    <option value="hslString">HSL string "hsl(360,100%,100%)"</option>
+                    <option value="hslaString">HSLA string "hsla(360,100%,100%,1)"</option>
+                    <option value="rgb">RGB object {r:255,g:255,b:255 }</option>
+                    <option value="rgba">RGBA object {r:255,g:255,b:255,a:1}</option>
+                    <option value="hsl">HSL object {h:360,s:100,l:100}</option>
+                    <option value="hsla">HSLA object {h:360,s:100,l:100,a:1}</option>
+                    <option value="hsl">HSV object {h:360,s:100,v:100}</option>
+                    <option value="hsla">HSVA object {h:360,s:100,v:100,a:1}</option>
+                    <option value="red">red 0..255</option>
+                    <option value="green">green 0..255</option>
+                    <option value="blue">blue 0..255</option>
+                    <option value="alpha">alpha 0..1</option>
+                    <option value="hue">hue 0..360</option>
+                    <option value="saturation">saturation 0..100</option>
+                    <option value="value">value 0..100</option>
+                    <option value="kelvin">kelvin 1000..40000</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label for="node-input-topic" style="padding-left: 25px; margin-right: -25px">Topic</label>
+                <input type="text" id="node-input-topic" placeholder="optional topic">
+                <input type="hidden" id="node-input-topicType">
+            </div>
+            </br>
+            <div class="form-row">
+                <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+                <input type="text" id="node-input-name" placeholder="Name">
+            </div>
+        </div>
+        <div id="iro-tab-config" style="display:none">
+            <div class="form-row">
+                <label for="node-input-layoutDirection"><i class="fa fa-repeat"></i> Direction</label>
+                <select id="node-input-layoutDirection">
+                <option value="horizontal">horizontal</option>
+                <option value="vertical">vertical</option>
+                </select>
+            </div>
+            <div class="form-row node-input-option-container-row">
+                <label for="node-input-option-container" style="vertical-align:top"><i class="fa fa-list-alt"></i> Options</label>
+                <ol id="node-input-option-container"></ol>
+            </div>
+        </div>
+    </div>
+
+</script>
+<!--
+************************************************************************************
+** This next section is where you can write a little info on how your node operates.
+** This info will be available in the right side bar when the user clicks on the node,
+** and clicks on the info tab.
+** We ask that you always enter something here to help other users become familiar
+** with your node and know how to interface with it.
+** HTML code must be used.
+** The data-help-name must be the same name as you have registered this node with.
+**
+** It should be the same name that you are registering with Node-RED (see line #26).
+************************************************************************************
+-->
+<script type="text/html" data-help-name="ui_iro-color-picker">
+    <p>A Node-RED dashboard ui node to display various types of color pickers and sliders.</p>
+    <p></p>
+    <p>This node is based on the <a href="https://iro.js.org/">iro.js</a> <i>Modular, design-conscious color picker widget for JavaScript</i></p>
+</script>

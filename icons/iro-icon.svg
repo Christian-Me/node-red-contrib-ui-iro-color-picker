@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="128px" height="128px" viewBox="0 0 128 128" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <path d="M48 88C70.0914 88 88 70.0914 88 48C88 25.9086 70.0914 8 48 8C25.9086 8 8 25.9086 8 48C8 70.0914 25.9086 88 48 88ZM48 96C21.4903 96 0 74.5097 0 48C0 21.4903 21.4903 0 48 0C74.5097 0 96 21.4903 96 48C96 74.5097 74.5097 96 48 96ZM48 64C56.8366 64 64 56.8366 64 48C64 39.1634 56.8366 32 48 32C39.1634 32 32 39.1634 32 48C32 56.8366 39.1634 64 48 64ZM48 72C34.7452 72 24 61.2548 24 48C24 34.7452 34.7452 24 48 24C61.2548 24 72 34.7452 72 48C72 61.2548 61.2548 72 48 72Z" transform="translate(16 16)" id="path_1" />
+    <path d="M64 128C99.3462 128 128 99.3462 128 64C128 28.6538 99.3462 0 64 0C28.6538 0 0 28.6538 0 64C0 99.3462 28.6538 128 64 128Z" transform="matrix(1 0 0 -1 0 128)" id="path_2" />
+    <rect width="128" height="128" id="artboard_1" />
+    <clipPath id="clip_1">
+      <use xlink:href="#artboard_1" clip-rule="evenodd" />
+    </clipPath>
+    <clipPath id="mask_1">
+      <use xlink:href="#path_1" />
+    </clipPath>
+  </defs>
+  <g id="favicon" clip-path="url(#clip_1)">
+    <path d="M48 88C70.0914 88 88 70.0914 88 48C88 25.9086 70.0914 8 48 8C25.9086 8 8 25.9086 8 48C8 70.0914 25.9086 88 48 88ZM48 96C21.4903 96 0 74.5097 0 48C0 21.4903 21.4903 0 48 0C74.5097 0 96 21.4903 96 48C96 74.5097 74.5097 96 48 96ZM48 64C56.8366 64 64 56.8366 64 48C64 39.1634 56.8366 32 48 32C39.1634 32 32 39.1634 32 48C32 56.8366 39.1634 64 48 64ZM48 72C34.7452 72 24 61.2548 24 48C24 34.7452 34.7452 24 48 24C61.2548 24 72 34.7452 72 48C72 61.2548 61.2548 72 48 72Z" transform="translate(16 16)" id="rings" fill="#FFFFFF" stroke="none" />
+    <g clip-path="url(#mask_1)">
+      <g id="huegradient">
+        <use stroke="none" fill="#FF0000" xlink:href="#path_2" fill-rule="evenodd" />
+        <use stroke="none" fill="#FFFFFF" fill-opacity="0.29803923" style="mix-blend-mode: lighten;" xlink:href="#path_2" fill-rule="evenodd" />
+        <use xlink:href="#path_2" fill="none" stroke="#979797" stroke-width="1" />
+      </g>
+    </g>
+  </g>
+</svg>
