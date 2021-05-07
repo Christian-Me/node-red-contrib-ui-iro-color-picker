@@ -421,7 +421,7 @@ module.exports = function(RED) {
                                 // No problem because the enable value is optional ...
                             }
                         }
-
+                        console.log('beforeEmit:',newMsg);
                         return { msg: newMsg };
                     },
 
@@ -441,6 +441,7 @@ module.exports = function(RED) {
                             //orig.msg = newMsg;
                             var topic = RED.util.evaluateNodeProperty(config.topic,config.topicType || "str",node,msg) || node.topi;
                             if (topic) { newMsg.topic = topic; }
+                            console.log('beforeSend:',newMsg);
                             return newMsg;
                         }
                     },
