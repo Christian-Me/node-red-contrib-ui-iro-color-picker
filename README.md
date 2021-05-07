@@ -12,6 +12,11 @@ This is my first dashboard node so any input is highly appreciated.
 - let the state survive reloads and new connections
 - fix modal popup on safari (some other ui elements still are shown above the picker widget
 
+## screenshots
+
+![as widget](https://raw.githubusercontent.com/Christian-Me/node-red-contrib-ui-iro-color-picker/master/doc/widgets.png)
+![as popup](https://raw.githubusercontent.com/Christian-Me/node-red-contrib-ui-iro-color-picker/master/doc/popup.png)
+
 ## Install
 
 Either use the Editor - Menu - Manage Palette - Install option, or run the following command in your Node-RED user directory (typically `~/.node-red`) after installing Node-RED-dashboard.
@@ -19,7 +24,7 @@ Either use the Editor - Menu - Manage Palette - Install option, or run the follo
     npm i node-red-contrib-ui-iro-color-picker
 
 ## Inputs
-Send `msg.payload` to this node to change the color of the color picker widget.
+Send `msg.payload` to this node to change the color of the color picker widget. The format can be any of the color formats iro.js supports (see output formats)
 
 ## Outputs
 Node will send the color value as `msg.payload`. The format can be defined in the configuration dialog
@@ -52,9 +57,10 @@ Node will send the color value as `msg.payload`. The format can be defined in th
 iro.js offers a variety of different color picker styles. These can be combined as required showing a part of the color definition
 
 - **direction** the components can be arranged either vertically or horizontally
-- **components** a combination out of several components can be selected and sorted. Each component has there general options
-    - **border** color
-    - **width** border width in pixel. 0 or none to disable
+- **components** a combination out of several components can be selected and sorted. 
+    - Each component has these general options
+        - **border** color
+        - **width** border width in pixel. 0 or none to disable
     - *color wheel*: The classic color wheel showing the hue. (Should be combined with a saturation slider)
         - *lightness* **fade** to fade the wheel according to the lightness level **constant** to show full colors only
         - *starting angle* of 0° hue level
