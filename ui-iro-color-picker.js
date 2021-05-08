@@ -100,6 +100,8 @@ module.exports = function(RED) {
             }
             
             </style>
+            
+            <script type='text/javascript' src='ui-iro-color-picker/js/iro.min.js'></script>
 
             <div class="iro-color-container" id="iro-color-container-${config.id}" ng-init='init(` + configAsJson + `)'>
                 <div ng-if="${config.label != ""}" style="width:${config.labelWidth}px;">${config.label}</div>          
@@ -368,7 +370,7 @@ module.exports = function(RED) {
                     templateScope: "local",                 // *REQUIRED* !!DO NOT EDIT!!
                     emitOnlyNewValues: false,               // *REQUIRED* Edit this if you would like your node to only emit new values.
                     forwardInputMessages: false,            // *REQUIRED* Edit this if you would like your node to forward the input message to it's ouput.
-                    storeFrontEndInputAsState: false,       // *REQUIRED* If the widget accepts user input - should it update the backend stored state ?
+                    storeFrontEndInputAsState: true,       // *REQUIRED* If the widget accepts user input - should it update the backend stored state ?
                     color: '#000000ff',
 
 /********************************************************************
@@ -397,7 +399,7 @@ module.exports = function(RED) {
 
                     beforeEmit: function(msg, value) {
                         var newMsg = {};
-                    
+                        // console.log('beforeEmit: ',msg,value);
                         if (msg) {
                             // Copy the socket id from the original input message. 
                             newMsg.socketid = msg.socketid;
@@ -421,7 +423,6 @@ module.exports = function(RED) {
                                 // No problem because the enable value is optional ...
                             }
                         }
-                        console.log('beforeEmit:',newMsg);
                         return { msg: newMsg };
                     },
 
@@ -434,6 +435,7 @@ module.exports = function(RED) {
 *
 */
                     beforeSend: function (msg, orig) {
+                        // console.log('beforeSend:',msg,orig);
                         if (orig) {
                             var newMsg = {};
                             // Store the switch state in the specified msg state field
@@ -441,7 +443,6 @@ module.exports = function(RED) {
                             //orig.msg = newMsg;
                             var topic = RED.util.evaluateNodeProperty(config.topic,config.topicType || "str",node,msg) || node.topi;
                             if (topic) { newMsg.topic = topic; }
-                            console.log('beforeSend:',newMsg);
                             return newMsg;
                         }
                     },
@@ -470,26 +471,57 @@ module.exports = function(RED) {
 * since the configuration will be available there.
 *
 */
+                        /**
+                        *  updates the color if it is changed. Updates button and background if necessary
+                        *   @param  {object} color  iro.js color object
+                        *   @param  {boolean} send  send message to backend if true
+                        *   @return {void}
+                        */
+                        var colorUpdate = function (color, send = true) {
+                            var colorHex8String = color.hex8String;
+                            if ($scope.iroColorValue!==colorHex8String || (send && $scope.lastSent!==colorHex8String)) { // limit updates to "new" colors
+                                $scope.iroColorValue = colorHex8String;
+                                if ($scope.btn) $scope.btn.style["background-color"] = colorHex8String;
+                                if ($scope.modal) $scope.modal.style.backgroundColor = color.hexString + Math.floor($scope.config.backgroundDim / 100*255).toString(16);
+                                if (send) {
+                                    console.log('color send ',color[$scope.config.outFormat]);
+                                    $scope.send({state:color[$scope.config.outFormat]});
+                                    $scope.lastSent = $scope.iroColorValue;
+                                }
+                            }
+                        }
+
+                        /**
+                        *  creates an instance of the iro.js widget
+                        *   -   destroys existing instance
+                        *   -   register callback functions
+                        *       -   `input:start`   sets the `$scope.inputStarted` flag and btn an modal references
+                        *       -   `input:move`
+                        *       -   `input:end`
+                        *   @return {void}
+                        */
                         var createIro = function () {
                             if($scope.iroColorPicker !== undefined) {
                                 $scope.iroColorPicker.destroy();
                             }
+                            $scope.opts.color = $scope.iroColorValue;
                             $scope.iroColorPicker = new iro.ColorPicker(iroDiv, $scope.opts);
-                            $scope.iroColorPicker.on($scope.config.dynOutput, function (color){
-                                $scope.config.iroColorValue = color.hex8String;
-                                $scope.colorHex = color.hexString;
-                                var btn = document.getElementById(`colorButton-${$scope.config.id}`);
-                                if (btn) {
-                                    btn.style["background-color"]=$scope.colorHex;
-                                }
+                            $scope.iroColorPicker.on('input:start', function (color) {
+                                console.log('input started');
+                                $scope.inputStarted = true;
+                                $scope.btn = document.getElementById(`colorButton-${$scope.config.id}`);
                                 if ($scope.config.backgroundVariable) {
-                                    var modal = document.getElementById(`colorModal-${$scope.config.id}`);
-                                    if (modal) {
-                                        modal.style.backgroundColor = color.hexString + Math.floor($scope.config.backgroundDim / 100*255).toString(16);
-                                    }
+                                    $scope.modal = document.getElementById(`colorModal-${$scope.config.id}`);
                                 }
-                                console.log('color picked: ',$scope.config.iroColorValue);
-                                $scope.send({state:color[$scope.config.outFormat]});
+                            });
+                            $scope.iroColorPicker.on('input:end', function (color) {
+                                $scope.inputStarted = false;
+                                colorUpdate(color);
+                                console.log('input ended', $scope.iroColorValue);
+                            });
+                            $scope.iroColorPicker.on('input:move', function (color) {
+                                colorUpdate(color, ($scope.config.dynOutput==='input:move'));
+                                console.log('input moved: ', $scope.iroColorValue);
                             });
                         }
 
@@ -504,7 +536,7 @@ module.exports = function(RED) {
                                 width: config.iroWidth * config.horizontalScale, // config.widgetWidthPx,
                                 handleRadius : 8 * config.horizontalScale,
                                 padding : 6 * config.horizontalScale,
-                                color: $scope.config.iroColorValue,
+                                color: $scope.iroColorValue,
                                 layoutDirection: config.layoutDirection,
                                 layout: [],
                             };
@@ -538,22 +570,41 @@ module.exports = function(RED) {
 */
                         $scope.$watch('msg', function(msg) {
                             if (!msg) { return; } // Ignore undefined msg
-                            if(msg.enable === true || msg.enable === false){
+                            if (msg.enable === true || msg.enable === false){
                                 disable(!msg.enable);
                                 return;
-                            }                            
-                            $scope.iroColorPicker.color.set(msg.state);
-                            $scope.config.iroColorValue = $scope.iroColorPicker.color.hex8String;
-                            $scope.colorHex = $scope.iroColorPicker.color.hexString;
-                            console.log('color set to ',$scope.colorHex);
+                            }
+                            if (msg.socketid) return;
+                            if ($scope.inputStarted) {
+                                console.log('input running, update rejected');
+                                return;
+                            }
+                            console.log('color received ',msg.state);
+
+                            // utilize the iro.Color API build in iro.js
+                            if ($scope.iroColor === undefined) {
+                                $scope.iroColor = new iro.Color(msg.state);
+                            } else {
+                                $scope.iroColor.set(msg.state);
+                            }
+
+                            // update color picker if available and update $scope.iroColorValue to 64bit RGBA string
+                            if ($scope.iroColorPicker!==undefined && $scope.iroColorPicker.color!==undefined){
+                                $scope.iroColorPicker.color.set(msg.state);
+                                $scope.iroColorValue = $scope.iroColorPicker.color.hex8String;
+                            } else {
+                                $scope.iroColorValue = $scope.iroColor.hex8String;
+                            }
+
+                            console.log('color set to ',$scope.iroColorValue);
                             var btn = document.getElementById(`colorButton-${$scope.config.id}`);
                             if (btn) {
-                                btn.style["background-color"]=$scope.colorHex;
+                                btn.style["background-color"]=$scope.iroColorValue;
                             }
                             if ($scope.config.backgroundVariable) {
                                 var modal = document.getElementById(`colorModal-${$scope.config.id}`);
                                 if (modal) {
-                                    modal.style.backgroundColor = $scope.colorHex + Math.floor($scope.config.backgroundDim / 100*255).toString(16);
+                                    modal.style.backgroundColor = $scope.iroColorValue.substring(0,7) + Math.floor($scope.config.backgroundDim / 100*255).toString(16);
                                 }
                             }
                         });

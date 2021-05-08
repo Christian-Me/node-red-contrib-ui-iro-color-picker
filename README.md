@@ -8,9 +8,7 @@ The widget is highly customizable by choosing and combining several components
 This is my first dashboard node so any input is highly appreciated.
 
 # help needed
-- synchronize state on all dashboards
-- let the state survive reloads and new connections
-- fix modal popup on safari (some other ui elements still are shown above the picker widget
+- fix modal popup on safari (some other ui elements still are shown above the picker widget) Any iOS / Safari / webkit expert?
 
 ## screenshots
 
@@ -25,6 +23,8 @@ Either use the Editor - Menu - Manage Palette - Install option, or run the follo
 
 ## Inputs
 Send `msg.payload` to this node to change the color of the color picker widget. The format can be any of the color formats iro.js supports (see output formats)
+
+Send `msg.enable`**false** to disable the widget.
 
 ## Outputs
 Node will send the color value as `msg.payload`. The format can be defined in the configuration dialog
@@ -76,8 +76,8 @@ iro.js offers a variety of different color picker styles. These can be combined 
         - *blue*
         - *alpha* (transparency)
         - *color temperature* in ° Kelvin
-            - minimum value (>2000°C)
-            - maximum value (<40.000°C)
+            - minimum value (>2.000°K)
+            - maximum value (<40.000°K)
 ## Requirements
 - Node-RED v19.4 or greater
 - Node-RED-dashboard v2.13.0 or greater
