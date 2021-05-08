@@ -368,9 +368,8 @@ module.exports = function(RED) {
                     format: html,                           // *REQUIRED* !!DO NOT EDIT!!
                     templateScope: "local",                 // *REQUIRED* !!DO NOT EDIT!!
                     emitOnlyNewValues: false,               // *REQUIRED* Edit this if you would like your node to only emit new values.
-                    forwardInputMessages: false,            // *REQUIRED* Edit this if you would like your node to forward the input message to it's ouput.
-                    storeFrontEndInputAsState: true,       // *REQUIRED* If the widget accepts user input - should it update the backend stored state ?
-                    color: '#000000ff',
+                    forwardInputMessages: config.passthru,  // *REQUIRED* Edit this if you would like your node to forward the input message to it's ouput.
+                    storeFrontEndInputAsState: true,        // *REQUIRED* If the widget accepts user input - should it update the backend stored state ?
 
 /********************************************************************
 
