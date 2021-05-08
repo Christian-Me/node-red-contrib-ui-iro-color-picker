@@ -319,7 +319,6 @@ module.exports = function(RED) {
                     if (!config.pickerType.startsWith('popup')) { // widget
                         if (config.widgetWidth<config.widgetBox.horizontalGrid) { // rescale components to fit into available width
                             config.horizontalScale=config.widgetWidth / config.widgetBox.horizontalGrid;
-                            console.log('horizontal scale set to ', config.horizontalScale);
                             config.height = Math.floor(config.height * config.horizontalScale) +1;
                         }
                     } else { // popups only need one grid for button
@@ -484,7 +483,7 @@ module.exports = function(RED) {
                                 if ($scope.btn) $scope.btn.style["background-color"] = colorHex8String;
                                 if ($scope.modal) $scope.modal.style.backgroundColor = color.hexString + Math.floor($scope.config.backgroundDim / 100*255).toString(16);
                                 if (send) {
-                                    console.log('color send ',color[$scope.config.outFormat]);
+                                    // console.log('color send ',color[$scope.config.outFormat]);
                                     $scope.send({state:color[$scope.config.outFormat]});
                                     $scope.lastSent = $scope.iroColorValue;
                                 }
@@ -507,7 +506,7 @@ module.exports = function(RED) {
                             $scope.opts.color = $scope.iroColorValue;
                             $scope.iroColorPicker = new iro.ColorPicker(iroDiv, $scope.opts);
                             $scope.iroColorPicker.on('input:start', function (color) {
-                                console.log('input started');
+                                // console.log('input started');
                                 $scope.inputStarted = true;
                                 $scope.btn = document.getElementById(`colorButton-${$scope.config.id}`);
                                 if ($scope.config.backgroundVariable) {
@@ -517,11 +516,11 @@ module.exports = function(RED) {
                             $scope.iroColorPicker.on('input:end', function (color) {
                                 $scope.inputStarted = false;
                                 colorUpdate(color);
-                                console.log('input ended', $scope.iroColorValue);
+                                // console.log('input ended', $scope.iroColorValue);
                             });
                             $scope.iroColorPicker.on('input:move', function (color) {
                                 colorUpdate(color, ($scope.config.dynOutput==='input:move'));
-                                console.log('input moved: ', $scope.iroColorValue);
+                                // console.log('input moved: ', $scope.iroColorValue);
                             });
                         }
 
@@ -529,8 +528,8 @@ module.exports = function(RED) {
                             $scope.config = config;
                             iroDiv = '#ui_iro_color_picker-' + $scope.$eval('$id');
 
-                            console.log(`init: $scope.config: ${$scope.config}`);
-                            console.log("iroWidth: ",config.iroWidth);
+                            // console.log(`init: $scope.config: ${$scope.config}`);
+                            // console.log("iroWidth: ",config.iroWidth);
 
                             $scope.opts={
                                 width: config.iroWidth * config.horizontalScale, // config.widgetWidthPx,
@@ -575,28 +574,27 @@ module.exports = function(RED) {
                                 return;
                             }
                             if (msg.socketid) return;
-                            if ($scope.inputStarted) {
-                                console.log('input running, update rejected');
-                                return;
-                            }
-                            console.log('color received ',msg.state);
+                            if ($scope.inputStarted) return;
+                        
+                            // console.log('color received ',msg.state);
 
-                            // utilize the iro.Color API build in iro.js
+                            // utilize the iro.Color API build in iro.js and update $scope.iroColorValue to 64bit RGBA string
                             if ($scope.iroColor === undefined) {
-                                $scope.iroColor = new iro.Color(msg.state);
+                                $scope.iroColor = new iro.Color();
+                            }
+                            if (typeof msg.state === "number") {
+                                $scope.iroColor.kelvin = msg.state;
                             } else {
                                 $scope.iroColor.set(msg.state);
                             }
+                            $scope.iroColorValue = $scope.iroColor.hex8String;
 
-                            // update color picker if available and update $scope.iroColorValue to 64bit RGBA string
+                            // update color picker if available 
                             if ($scope.iroColorPicker!==undefined && $scope.iroColorPicker.color!==undefined){
-                                $scope.iroColorPicker.color.set(msg.state);
-                                $scope.iroColorValue = $scope.iroColorPicker.color.hex8String;
-                            } else {
-                                $scope.iroColorValue = $scope.iroColor.hex8String;
+                                $scope.iroColorPicker.color.set($scope.iroColor.hex8String);
                             }
 
-                            console.log('color set to ',$scope.iroColorValue);
+                            // console.log('color set to ',$scope.iroColorValue);
                             var btn = document.getElementById(`colorButton-${$scope.config.id}`);
                             if (btn) {
                                 btn.style["background-color"]=$scope.iroColorValue;
