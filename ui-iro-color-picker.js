@@ -477,14 +477,18 @@ module.exports = function(RED) {
                         */
                         var colorUpdate = function (color, send = true) {
                             var colorHex8String = color.hex8String;
-                            if ($scope.iroColorValue!==colorHex8String || (send && $scope.lastSent!==colorHex8String)) { // limit updates to "new" colors
+                            if ($scope.iroColorValue!==colorHex8String || (send && $scope.lastSent!==JSON.stringify(color[$scope.config.outFormat]))) { // limit updates to "new" colors
                                 $scope.iroColorValue = colorHex8String;
                                 if ($scope.btn) $scope.btn.style["background-color"] = colorHex8String;
                                 if ($scope.modal) $scope.modal.style.backgroundColor = color.hexString + Math.floor($scope.config.backgroundDim / 100*255).toString(16);
-                                if (send) {
+                                if (send && !$scope.sendHold) {
                                     // console.log('color send ',color[$scope.config.outFormat]);
                                     $scope.send({state:color[$scope.config.outFormat]});
-                                    $scope.lastSent = $scope.iroColorValue;
+                                    $scope.lastSent = JSON.stringify(color[$scope.config.outFormat]);
+                                    if ($scope.config.outputLimit && $scope.config.outputLimit>0) {
+                                        $scope.sendHold = true;
+                                        setTimeout(function () {delete $scope.sendHold;},1000/$scope.config.outputLimit);
+                                    }
                                 }
                             }
                         }
@@ -514,6 +518,7 @@ module.exports = function(RED) {
                             });
                             $scope.iroColorPicker.on('input:end', function (color) {
                                 $scope.inputStarted = false;
+                                $scope.coolDown = color.hex8String;
                                 colorUpdate(color);
                                 // console.log('input ended', $scope.iroColorValue);
                             });
@@ -546,6 +551,7 @@ module.exports = function(RED) {
                                     "options": component.options
                                 });
                             });
+                            // console.log('init',$scope.opts);
                             var stateCheck = setInterval(function() {
                                 if (document.querySelector(iroDiv)) {
                                     clearInterval(stateCheck);
@@ -571,10 +577,7 @@ module.exports = function(RED) {
                             if (msg.enable === true || msg.enable === false){
                                 disable(!msg.enable);
                                 return;
-                            }
-                            if (msg.socketid) return;
-                            if ($scope.inputStarted) return;
-                        
+                            }                      
                             // console.log('color received ',msg.state);
 
                             // utilize the iro.Color API build in iro.js and update $scope.iroColorValue to 64bit RGBA string
@@ -586,11 +589,29 @@ module.exports = function(RED) {
                             } else {
                                 $scope.iroColor.set(msg.state);
                             }
-                            $scope.iroColorValue = $scope.iroColor.hex8String;
+                            var iroColorValue = $scope.iroColor.hex8String;
 
+                            // send 'when confirmed': reset sendHold flag
+                            // console.log('$scope.config.outputConfirmed',$scope.config.outputConfirmed,$scope.lastSent,JSON.stringify(msg.state),$scope.lastSent===JSON.stringify(msg.state));
+                            if ($scope.config.outputConfirmed && $scope.sendHold && $scope.lastSent===JSON.stringify(msg.state)) {
+                                delete $scope.sendHold;
+                            }
+
+                            // exit here during 'sliding'
+                            if (msg.socketid) return;
+                            if ($scope.inputStarted) return;
+                            
+                            // reset coolDown flag if last value is confirmed or exit
+                            if ($scope.coolDown !== undefined) {
+                                if (iroColorValue !== $scope.coolDown) return;
+                                delete $scope.coolDown;
+                            }
+
+                            $scope.iroColorValue = iroColorValue
+                            
                             // update color picker if available 
                             if ($scope.iroColorPicker!==undefined && $scope.iroColorPicker.color!==undefined){
-                                $scope.iroColorPicker.color.set($scope.iroColor.hex8String);
+                                $scope.iroColorPicker.color.set($scope.iroColorValue);
                             }
 
                             // console.log('color set to ',$scope.iroColorValue);

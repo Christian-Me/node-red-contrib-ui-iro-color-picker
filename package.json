@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-ui-iro-color-picker",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "iro.js color picker for the Node-RED dashboard",
   "peerDependencies": {
     "node-red-dashboard": ">2.15.0"
@@ -11,6 +11,8 @@
   "keywords": [
     "node-red",
     "dashboard",
+    "widget",
+    "ui",
     "iro.js",
     "color",
     "picker"
@@ -18,7 +20,7 @@
   "bugs": {
     "url": "https://github.com/Christian-Me/node-red-contrib-ui-iro-color-picker/issues"
   },
-  "homepage": "https://github.com/Christian-Me/node-red-contrib-ui-iro-color-picker/issues#README.md",
+  "homepage": "https://github.com/Christian-Me/node-red-contrib-ui-iro-color-picker#README.md",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Christian-Me/node-red-contrib-ui-iro-color-picker.git"

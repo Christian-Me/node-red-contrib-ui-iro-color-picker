@@ -1,11 +1,13 @@
 node-red-contrib-ui-iro-color-picker
 ====================================
 
-Alternative color picker node utilizing the [iro.js](https://iro.js.org) widget
+Alternative color picker node utilizing the [iro.js](https://iro.js.org) widget. The main credit goes to [James](https://jamesdaniel.dev/), thank you for this nice widget.
 
-The widget is highly customizable by choosing and combining several components
+The node-red node is highly customizable inside the editor by choosing and combining several components either as a widget or a popup window.
 
 This is my first dashboard node so any input is highly appreciated.
+
+**My main goal of getting a colour picker on mobile devices usable with my thumb is not achieved jet. I could not solve the modal popup to be exclusively on top of everything else. If someone more experienced than I in safari or angular could perhaps help me:**
 
 # help needed
 - fix modal popup on safari (some other ui elements still are shown above the picker widget) Any iOS / Safari / webkit expert?
@@ -45,9 +47,11 @@ Node will send the color value as `msg.payload`. The format can be defined in th
     - the background can follow the picked color
 - **bypass messages** select this to pass all incoming messages to the output
 - **send**
-    - *when released* send a message when the user release the mouse button
-    - *on user interaction* send on every user interaction
-    - *on color change* only if the resulting color changed
+    - **when released** send a message when the user release the mouse button
+    - **on user interaction** send on every user interaction
+        - the output can be limited either by a maximum frequency or dynamically
+        - if *when confirmed* is checked new messages are blocked until the last message is confiremd by the backend. This should adopt the updates according to the backend speed and the network
+        - if unchecked a maximum update frequency in messages per second can be defined.
 - **payload** choose the desired output format.
 - **topic** topic to be added to the message
 - **name** name of the node inside the editor

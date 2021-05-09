@@ -229,9 +229,9 @@
             label: {value:'iro-color-picker'},
             stateField: {value: 'payload'},
             enableField: {value: 'enable'},            
-            layoutDirection: {value:'horizontal'},
-            widgetIndent: {value: '2'},
-            pickerType: {value: 'popupCG'},
+            layoutDirection: {value:'vertical'},
+            widgetIndent: {value: '3'},
+            pickerType: {value: 'widget'},
             pickerSize: {value: '100'},
             backgroundDim: {value: '50'},
             backgroundColor: {value: '#000000'},
@@ -240,8 +240,10 @@
             format: {value: 'hex'},
             outFormat: {value: 'rgb'},
             dynOutput: {value: "input:end"},
+            outputConfirmed: {value: false},
+            outputLimit: {value: '10'},
             passthru: {value: false},
-            topic: {value: 'topic', validate: (RED.validators.hasOwnProperty('typedInput')?RED.validators.typedInput('topicType'):function(v) { return true})},
+            topic: {value: '', validate: (RED.validators.hasOwnProperty('typedInput')?RED.validators.typedInput('topicType'):function(v) { return true})},
             topicType: {value: 'msg'},
             iroColorValue: {value: '#000000ff'},
         },
@@ -556,6 +558,22 @@
                     $("#node-options-picker").hide();
                 }
             });
+            $('#node-input-dynOutput').change(function(ev) {
+                if ($('#node-input-dynOutput').val().startsWith('input:move')) {
+                    $("#node-options-dynOutput").show();
+                } else {
+                    $("#node-options-dynOutput").hide();
+                }
+            });
+            $('#node-input-outputConfirmed').change(function(ev) {
+                if ($('#node-input-outputConfirmed').is(':checked')) {
+                    $("#node-options-dynOutputMin").show();
+                    $("#node-options-dynOutputMax").hide();
+                } else {
+                    $("#node-options-dynOutputMin").hide();
+                    $("#node-options-dynOutputMax").show();
+                }
+            });
             setTimeout(function() { node.tabs.resize();},0);
         },
         oneditsave: function() {
@@ -581,15 +599,15 @@
                         c.options.boxHeight = Number(slider.find(".node-input-option-boxHeight").val());
                         if (c.options.boxHeight === NaN || c.options.boxHeight<10) c.options.boxHeight=null;
                         break;
-                        case "slider":
-                            c.options.sliderType = slider.find(".node-input-option-type").val();
-                            if (c.type=="kelvin") {
-                                c.options.minTemperature = Number(slider.find(".node-input-option-minTemperature").val());
-                                if (c.options.minTemperature === NaN ) c.options.minTemperature=3000;
-                                c.options.maxTemperature = Number(slider.find(".node-input-option-maxTemperature").val());
-                                if (c.options.maxTemperature === NaN ) c.options.maxTemperature=6000;
-                            }
-                            break;
+                    case "slider":
+                        c.options.sliderType = slider.find(".node-input-option-type").val();
+                        if (c.options.sliderType === "kelvin") {
+                            c.options.minTemperature = Number(slider.find(".node-input-option-minTemperature").val());
+                            if (!c.options.minTemperature || c.options.minTemperature === NaN ) c.options.minTemperature=3000;
+                            c.options.maxTemperature = Number(slider.find(".node-input-option-maxTemperature").val());
+                            if (!c.options.maxTemperature || c.options.maxTemperature === NaN ) c.options.maxTemperature=6000;
+                        }
+                        break;
                 }
                 node.components.push(c);
             });
@@ -711,7 +729,7 @@
                     <label for="node-input-backgroundColor" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-circle-o-notch "></i>&nbsp;Color</label>
                     <input id="node-input-backgroundColor" type="color" style="width: 15%;"/>
                     <input type="checkbox" checked id="node-input-backgroundVariable" style="display:inline-block; width:auto; vertical-align:middle;">
-                    <label style="width:auto" for="node-input-backgroundVariable"><i class="fa fa-fa-mouse-pointer "></i> picked</label>
+                    <label style="width:auto" for="node-input-backgroundVariable">&nbsp;picked</label>
                     <label for="node-input-backgroundDim" style="width: 15%; text-align: right;"><i class="fa fa-undo"></i>&nbsp;&nbsp;Alpha</label>
                     <input id="node-input-backgroundDim" type="number" min=0 max=100 step=1 style="width: 10%;"/>
                     <label for="node-input-backgroundDim">&nbsp;%</label>
@@ -727,6 +745,17 @@
                     <option value="input:end">when released</option>
                     <option value="input:move">on user interaction</option>
                 </select>
+            </div>
+            <div id="node-options-dynOutput" style="display:none">
+                <div class="form-row">
+                    <label for="node-input-outputConfirmed" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-play"></i> send</label>
+                    <input type="checkbox" checked id="node-input-outputConfirmed" style="display:inline-block; width:auto; vertical-align:middle;">
+                    <label style="width:auto" for="node-input-outputConfirmed">&nbsp;when confirmed</label>
+                        <label for="node-input-outputLimit" id="node-options-dynOutputMin" style="width: 15%; text-align: right; display:none;"><i class="fa fa-step-forward"></i>&nbsp;&nbsp;min</label>
+                        <label for="node-input-outputLimit" id="node-options-dynOutputMax" style="width: 15%; text-align: right; display:none;"><i class="fa fa-step-forward"></i>&nbsp;&nbsp;max</label>
+                    <input id="node-input-outputLimit" type="number" min=0 max=100 step=1 style="width: 10%;"/>
+                    <label for="node-input-outputLimit">&nbsp;msg/s</label>
+                </div>
             </div>
             <div class="form-row">
                 <label for="node-input-outFormat" style="padding-left: 25px; margin-right: -25px">Payload</label>
