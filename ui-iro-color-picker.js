@@ -103,7 +103,7 @@ module.exports = function(RED) {
             
             <script type='text/javascript' src='ui-iro-color-picker/js/iro.min.js'></script>
 
-            <div class="iro-color-container" id="iro-color-container-${config.id}" ng-init='init(` + configAsJson + `)'>
+            <div class="iro-color-container" id="iro-color-container-${config.id}" style="display:flex;" ng-init='init(` + configAsJson + `)'>
                 <div ng-if="${config.label != ""}" style="width:${config.labelWidth}px;">${config.label}</div>          
                 <button id="colorButton-${config.id}" class="md-raised md-button md-ink-ripple" type="button" style="width:100px;" color='{{colorHex || config.site.theme["widget-backgroundColor"].value}}'>&nbsp;</Button>
             </div>
@@ -173,7 +173,7 @@ module.exports = function(RED) {
             } else {
                 html = String.raw`
                 <script type='text/javascript' src='ui-iro-color-picker/js/iro.min.js'></script>
-                <div class="iro-color-container" id="iro-color-container-${config.id}" ng-init='init(` + configAsJson + `)'>
+                <div class="iro-color-container" id="iro-color-container-${config.id}" style="display:flex;" ng-init='init(` + configAsJson + `)'>
                     <div ng-if="${config.label != ""}" id="iro-color-label-${config.id}" style="width:${config.labelWidth}px;">${config.label}</div>          
                     <div id='ui_iro_color_picker-{{$id}}' style="width:${config.widgetWidthPx}px; background-color:unset; border:unset;"></div>
                 </div>
