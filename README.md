@@ -24,9 +24,37 @@ Either use the Editor - Menu - Manage Palette - Install option, or run the follo
     npm i node-red-contrib-ui-iro-color-picker
 
 ## Inputs
-Send `msg.payload` to this node to change the color of the color picker widget. The format can be any of the color formats iro.js supports (see output formats)
+Send `msg.payload` to this node to change the color of the color picker widget. The format can be any of the color formats iro.js supports
+- Hex string: "#ff0000"
+- Hex alpha string: "#ff0000ff"
+- Shorthand hex string: "#f00"
+- Shorthand hex alpha string: "#f00f"
+- RGB string: "rgb(255, 0, 0)"
+- RGBA string: "rgba(255, 0, 0, 1)"
+- Percentage RGB string: "rgb(100%, 0%, 0%)"
+- Percentage RGBA string: "rgba(100%, 0%, 0%, 100%)"
+- RGB object: {r: 255, g: 0, b: 0}
+- RGBA object: {r: 255, g: 0, b: 0, a: 1}
+- HSL string: "hsl(360, 50%, 100%)"
+- HSLA string: "hsla(360, 50%, 100%, 1)"
+- HSL object: {h: 360, s: 50, l: 100}
+- HSLA object: {h: 360, s: 50, l: 100, a: 1}
+- HSV object: {h: 360, s: 100, v: 50}
+- HSVA object: {h: 360, s: 100, v: 50, a: 1}
 
-Send `msg.enable`**false** to disable the widget.
+in addition the following input formats are supported to set individual parameters
+- `msg.hue` 0 - 360
+- `msg.value` 0 - 100
+- `msg.saturation` 0 - 100
+- `msg.red` 0 - 255
+- `msg.yellow` 0 - 255
+- `msg.blue` 0 - 255
+- `msg.alpha` 0 - 1
+- `msg.kelvin` 2.000 - 40.0000
+
+if a numeric `msg.payload` is received it is assumed that the value corresponds to the output format
+
+Send `msg.enable` **false** to disable the widget.
 
 ## Outputs
 Node will send the color value as `msg.payload`. The format can be defined in the configuration dialog
@@ -50,7 +78,7 @@ Node will send the color value as `msg.payload`. The format can be defined in th
     - **when released** send a message when the user release the mouse button
     - **on user interaction** send on every user interaction
         - the output can be limited either by a maximum frequency or dynamically
-        - if *when confirmed* is checked new messages are blocked until the last message is confiremd by the backend. This should adopt the updates according to the backend speed and the network
+        - if *when confirmed* is checked new messages are blocked until the last message is confirmed by the backend. This should adopt the updates according to the backend speed and the network
         - if unchecked a maximum update frequency in messages per second can be defined.
 - **payload** choose the desired output format.
 - **topic** topic to be added to the message
@@ -82,6 +110,17 @@ iro.js offers a variety of different color picker styles. These can be combined 
         - *color temperature* in ° Kelvin
             - minimum value (>2.000°K)
             - maximum value (<40.000°K)
+
+## Changelog
+
+### 0.0.4
+- partial fix for safari issue: Display seams OK but taps/clicks are still poking through **any support appreciated**
+- single value payloads
+- extra output format for tunable whites `{v:100,t:6000}` **experimantal**
+- fix for single hue slider
+- msg.topic defaults correctly
+- hsl and hsla output fixed
+
 ## Requirements
 - Node-RED v19.4 or greater
 - Node-RED-dashboard v2.13.0 or greater

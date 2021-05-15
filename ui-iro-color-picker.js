@@ -64,6 +64,7 @@ module.exports = function(RED) {
             html = String.raw`
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <style>
+
             .iro-color-container{
                 display:flex;
                 width:100%;
@@ -75,26 +76,27 @@ module.exports = function(RED) {
                 pointer-events: none !important;
             }
 
-            /* The Modal (background) */
+            /* Modal Background */
             .modal {
               display: none; /* Hidden by default */
-              -webkit-transform: translate3d(0, 0, 0);
-              transform: translate3d(0, 0, 0);
+              -webkit-transform:translate3d(0,0,100px);
+              transform: translate3d(0, 0, 100px);
               position: fixed;
-              z-index: 100; /* Sit on top 2147483647*/
-              padding-top: 100px; /* Location of the box */
+              z-index: 10 !important; /* Sit on top */
+              /* padding-top: 100px;  Location of the box */
               left: 0;
               top: 0;
               width: 100%; /* Full width */
               height: 100%; /* Full height */
-              overflow: auto; /* Enable scroll if needed */
+              -webkit-overflow-scrolling: none;
+        	  overflow: hidden;
               background-color: rgb(0,0,0); /* Fallback color */
               background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
             }
             
             /* Modal Content */
             .modal-content {
-              background-color: rgba(0,0,0,0);
+              background-color: rgba(0,0,0,1);
               position: absolute;
               display: block;
             }
@@ -103,7 +105,7 @@ module.exports = function(RED) {
             
             <script type='text/javascript' src='ui-iro-color-picker/js/iro.min.js'></script>
 
-            <div class="iro-color-container" id="iro-color-container-${config.id}" style="display:flex;" ng-init='init(` + configAsJson + `)'>
+            <div class="iro-color-container" id="iro-color-container-${config.id}" style="display:flex; flex-direction: row;" ng-init='init(` + configAsJson + `)'>
                 <div ng-if="${config.label != ""}" style="width:${config.labelWidth}px;">${config.label}</div>          
                 <button id="colorButton-${config.id}" class="md-raised md-button md-ink-ripple" type="button" style="width:100px;" color='{{colorHex || config.site.theme["widget-backgroundColor"].value}}'>&nbsp;</Button>
             </div>
@@ -145,24 +147,21 @@ module.exports = function(RED) {
                     }
                     if (positionTop + ${config.widgetHeightPx} > window.innerHeight) positionTop = window.innerHeight - ${config.widgetHeightPx};
                     if (positionTop<5) positionTop = 5;
+                    if (positionLeft<5) positionLeft = 5;
                     
                     // console.log(positionLeft, e.clientX, e.layerX, ${config.widgetWidthPx/2}, e);
                     // console.log(pickerType, positionTop, window.innerHeight, ${config.widgetHeightPx});
 
                     modalContent.style.left = positionLeft + "px";
                     modalContent.style.top = positionTop + "px";
-                    modal.style.display = "block";
+                    modal.style.display = "flex";
+                    document.ontouchmove = (e) => e.preventDefault();
 
-                    // When the user clicks on <span> (x), close the modal
-                    /*
-                    document.getElementById("colorModal-close-${config.id}").onclick = function() {
-                        document.getElementById("colorModal-${config.id}").style.display = "none";
-                    }
-                    */
                     // When the user clicks anywhere outside of the modal, close it
                     window.onclick = function(event) {
                         var modal = document.getElementById("colorModal-${config.id}");
                         if (event.target == modal) {
+                            document.ontouchmove = (e) => true;
                             modal.style.display = "none";
                         }
                     }
@@ -173,7 +172,7 @@ module.exports = function(RED) {
             } else {
                 html = String.raw`
                 <script type='text/javascript' src='ui-iro-color-picker/js/iro.min.js'></script>
-                <div class="iro-color-container" id="iro-color-container-${config.id}" style="display:flex;" ng-init='init(` + configAsJson + `)'>
+                <div class="iro-color-container" id="iro-color-container-${config.id}" style="display:flex; flex-direction: row;" ng-init='init(` + configAsJson + `)'>
                     <div ng-if="${config.label != ""}" id="iro-color-label-${config.id}" style="width:${config.labelWidth}px;">${config.label}</div>          
                     <div id='ui_iro_color_picker-{{$id}}' style="width:${config.widgetWidthPx}px; background-color:unset; border:unset;"></div>
                 </div>
@@ -408,6 +407,8 @@ module.exports = function(RED) {
                             try {
                                 // Get the new state value from the specified message field
                                 newMsg.state = RED.util.getMessageProperty(msg, config.stateField || "payload");
+                                newMsg.kelvin = RED.util.getMessageProperty(msg, "kelvin");
+                                newMsg.value = RED.util.getMessageProperty(msg, "value");
                             } 
                             catch(err) {
                                 // No problem because the state field is optional ...
@@ -421,6 +422,7 @@ module.exports = function(RED) {
                                 // No problem because the enable value is optional ...
                             }
                         }
+                        console.log('beforeEmit: ', newMsg);
                         return { msg: newMsg };
                     },
 
@@ -469,6 +471,8 @@ module.exports = function(RED) {
 * since the configuration will be available there.
 *
 */
+                        const iroParameters = ['kelvin','red','green','blue','value','saturation','alpha','hue','index'];
+
                         /**
                         *  updates the color if it is changed. Updates button and background if necessary
                         *   @param  {object} color  iro.js color object
@@ -477,14 +481,25 @@ module.exports = function(RED) {
                         */
                         var colorUpdate = function (color, send = true) {
                             var colorHex8String = color.hex8String;
-                            if ($scope.iroColorValue!==colorHex8String || (send && $scope.lastSent!==JSON.stringify(color[$scope.config.outFormat]))) { // limit updates to "new" colors
+                            var colorToSend;
+                            switch ($scope.config.outFormat) {
+                                case 'tuneable':
+                                    colorToSend = {
+                                        v: color.value,
+                                        t: color.kelvin
+                                    }
+                                    break;
+                                default:
+                                    colorToSend = color[$scope.config.outFormat];
+                            }
+                            console.log('colorUpdate:',$scope.iroColorValue,colorHex8String);
+                            if ($scope.iroColorValue!==colorHex8String || (send && $scope.lastSent!==JSON.stringify(colorToSend))) { // limit updates to "new" colors
                                 $scope.iroColorValue = colorHex8String;
                                 if ($scope.btn) $scope.btn.style["background-color"] = colorHex8String;
                                 if ($scope.modal) $scope.modal.style.backgroundColor = color.hexString + Math.floor($scope.config.backgroundDim / 100*255).toString(16);
                                 if (send && !$scope.sendHold) {
-                                    // console.log('color send ',color[$scope.config.outFormat]);
-                                    $scope.send({state:color[$scope.config.outFormat]});
-                                    $scope.lastSent = JSON.stringify(color[$scope.config.outFormat]);
+                                    $scope.send({state:colorToSend});
+                                    $scope.lastSent = JSON.stringify(colorToSend);
                                     if ($scope.config.outputLimit && $scope.config.outputLimit>0) {
                                         $scope.sendHold = true;
                                         setTimeout(function () {delete $scope.sendHold;},1000/$scope.config.outputLimit);
@@ -509,7 +524,7 @@ module.exports = function(RED) {
                             $scope.opts.color = $scope.iroColorValue;
                             $scope.iroColorPicker = new iro.ColorPicker(iroDiv, $scope.opts);
                             $scope.iroColorPicker.on('input:start', function (color) {
-                                // console.log('input started');
+                                console.log('input started', color.hex8String);
                                 $scope.inputStarted = true;
                                 $scope.btn = document.getElementById(`colorButton-${$scope.config.id}`);
                                 if ($scope.config.backgroundVariable) {
@@ -519,12 +534,12 @@ module.exports = function(RED) {
                             $scope.iroColorPicker.on('input:end', function (color) {
                                 $scope.inputStarted = false;
                                 $scope.coolDown = color.hex8String;
+                                console.log('input ended', color.hex8String);
                                 colorUpdate(color);
-                                // console.log('input ended', $scope.iroColorValue);
                             });
                             $scope.iroColorPicker.on('input:move', function (color) {
+                                console.log('input moved: ', color.hex8String);
                                 colorUpdate(color, ($scope.config.dynOutput==='input:move'));
-                                // console.log('input moved: ', $scope.iroColorValue);
                             });
                         }
 
@@ -535,11 +550,12 @@ module.exports = function(RED) {
                             // console.log(`init: $scope.config: ${$scope.config}`);
                             // console.log("iroWidth: ",config.iroWidth);
 
+                            if ($scope.iroColorValue===undefined)  $scope.iroColorValue = {h: 360, s: 100, v: 100};
                             $scope.opts={
                                 width: config.iroWidth * config.horizontalScale, // config.widgetWidthPx,
                                 handleRadius : 8 * config.horizontalScale,
                                 padding : 6 * config.horizontalScale,
-                                color: $scope.iroColorValue,
+                                color: $scope.iroColorValue, // $scope.iroColorValue
                                 layoutDirection: config.layoutDirection,
                                 layout: [],
                             };
@@ -551,7 +567,7 @@ module.exports = function(RED) {
                                     "options": component.options
                                 });
                             });
-                            // console.log('init',$scope.opts);
+                            console.log('init',$scope.opts);
                             var stateCheck = setInterval(function() {
                                 if (document.querySelector(iroDiv)) {
                                     clearInterval(stateCheck);
@@ -578,17 +594,40 @@ module.exports = function(RED) {
                                 disable(!msg.enable);
                                 return;
                             }                      
-                            // console.log('color received ',msg.state);
+                            console.log('color received:',msg,' current:', ($scope.iroColor === undefined) ? 'undefined' : $scope.iroColor.hex8String);
 
                             // utilize the iro.Color API build in iro.js and update $scope.iroColorValue to 64bit RGBA string
                             if ($scope.iroColor === undefined) {
                                 $scope.iroColor = new iro.Color();
                             }
-                            if (typeof msg.state === "number") {
-                                $scope.iroColor.kelvin = msg.state;
-                            } else {
-                                $scope.iroColor.set(msg.state);
+
+                            if (msg.hasOwnProperty('state')){
+                                if (typeof msg.state === "number") {
+                                    try {
+                                        $scope.iroColor[$scope.config.outFormat] = msg.state;
+                                    } catch (e) {
+                                        console.warn(`color conversion failed! Expected "${$scope.config.outFormat}" value, received:`,msg.state);		// catch any errors that may occur and display them in the web browsers console
+                                        return;
+                                    }
+                                } else {
+                                    try {
+                                        $scope.iroColor.set(msg.state);
+                                    } catch (e) {
+                                        console.warn(`color conversion failed! received:`,msg.state);		// catch any errors that may occur and display them in the web browsers console
+                                        return;
+                                    }
+                                }
                             }
+
+                            if ($scope.lastData===undefined) $scope.lastData={};
+                            iroParameters.forEach(paramter => {
+                                if (msg.hasOwnProperty(paramter)) {
+                                    $scope.iroColor[paramter] = Number(msg[paramter]);
+                                    $scope.lastData[paramter]=Number(msg[paramter]);
+                                    if (paramter==='kelvin' && $scope.lastData.hasOwnProperty('value')) $scope.iroColor.value = $scope.lastData.value;
+                                }
+                            });
+
                             var iroColorValue = $scope.iroColor.hex8String;
 
                             // send 'when confirmed': reset sendHold flag
@@ -606,8 +645,8 @@ module.exports = function(RED) {
                                 if (iroColorValue !== $scope.coolDown) return;
                                 delete $scope.coolDown;
                             }
-
-                            $scope.iroColorValue = iroColorValue
+                            console.log('color: ',iroColorValue,' last', $scope.lastData,' v:', $scope.iroColor.value, ' t:', $scope.iroColor.kelvin);
+                            $scope.iroColorValue = iroColorValue;
                             
                             // update color picker if available 
                             if ($scope.iroColorPicker!==undefined && $scope.iroColorPicker.color!==undefined){

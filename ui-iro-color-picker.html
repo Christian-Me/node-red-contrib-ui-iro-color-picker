@@ -226,7 +226,7 @@
 // },
 //
 //********************************************************************************* BEGIN USER DEFINED DEFAULT VALUES
-            label: {value:'iro-color-picker'},
+            label: {value:''},
             stateField: {value: 'payload'},
             enableField: {value: 'enable'},            
             layoutDirection: {value:'vertical'},
@@ -243,9 +243,9 @@
             outputConfirmed: {value: false},
             outputLimit: {value: '10'},
             passthru: {value: false},
-            topic: {value: '', validate: (RED.validators.hasOwnProperty('typedInput')?RED.validators.typedInput('topicType'):function(v) { return true})},
+            topic: {value: 'topic', validate: (RED.validators.hasOwnProperty('typedInput')?RED.validators.typedInput('topicType'):function(v) { return true})},
             topicType: {value: 'msg'},
-            iroColorValue: {value: '#000000ff'},
+            iroColorValue: {h: 360, s: 100, v: 100},
         },
 //********************************************************************************* END USER DEFINED DEFAULT VALUES
 //*********************************************************************************
@@ -285,7 +285,8 @@
 // Typically, set this to the same name of your node.
 // Spaces are permitted.
         label: function() {
-            return this.name||"iro.js color picker";
+            return this.name || this.label || "iro-color-picker";
+            // return this.name || (~this.label.indexOf("{{") ? null : this.label) || "iro-color-picker";
         },
         labelStyle: function() {
             return this.name?"node_label_italic":"";
@@ -770,8 +771,8 @@
                     <option value="rgba">RGBA object {r:255,g:255,b:255,a:1}</option>
                     <option value="hsl">HSL object {h:360,s:100,l:100}</option>
                     <option value="hsla">HSLA object {h:360,s:100,l:100,a:1}</option>
-                    <option value="hsl">HSV object {h:360,s:100,v:100}</option>
-                    <option value="hsla">HSVA object {h:360,s:100,v:100,a:1}</option>
+                    <option value="hsv">HSV object {h:360,s:100,v:100}</option>
+                    <option value="hsva">HSVA object {h:360,s:100,v:100,a:1}</option>
                     <option value="red">red 0..255</option>
                     <option value="green">green 0..255</option>
                     <option value="blue">blue 0..255</option>
@@ -780,6 +781,7 @@
                     <option value="saturation">saturation 0..100</option>
                     <option value="value">value 0..100</option>
                     <option value="kelvin">kelvin 1000..40000</option>
+                    <option value="tuneable">tuneable white {v:100%,t:40000}</option>
                 </select>
             </div>
             <div class="form-row">
