@@ -52,7 +52,7 @@ in addition the following input formats are supported to set individual paramete
 - `msg.alpha` 0 - 1
 - `msg.kelvin` 2.000 - 40.0000
 
-if a numeric `msg.payload` is received it is assumed that the value corresponds to the output format
+if a numeric `msg.payload` is received it is assumed that the value corresponds to the output format. **In this case the output format has be set to a single value format too!**
 
 Send `msg.enable` **false** to disable the widget.
 
@@ -116,10 +116,12 @@ iro.js offers a variety of different color picker styles. These can be combined 
 ### 0.0.4
 - partial fix for safari issue: Display seams OK but taps/clicks are still poking through **any support appreciated**
 - single value payloads
-- extra output format for tunable whites `{v:100,t:6000}` **experimantal**
+- extra output format for tunable whites `{v:100,t:6000}` **experimental**
 - fix for single hue slider
 - msg.topic defaults correctly
 - hsl and hsla output fixed
+- fixes for horizontal stacking
+- fixes for widgets without a label
 
 ## Requirements
 - Node-RED v19.4 or greater

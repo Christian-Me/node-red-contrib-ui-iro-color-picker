@@ -96,7 +96,7 @@ module.exports = function(RED) {
             
             /* Modal Content */
             .modal-content {
-              background-color: rgba(0,0,0,1);
+              background-color: rgba(0,0,0,0);
               position: absolute;
               display: block;
             }
@@ -265,7 +265,7 @@ module.exports = function(RED) {
                 config.site = getSiteProperties();
                 config.type = config.layout;
                 config.width = (config.width == 0) ? parseInt(group.config.width) : parseInt(config.width);
-                if (config.widgetIndent<1) config.widgetIndent=1;
+                if (config.widgetIndent<1 && config.label!=="") config.widgetIndent=1;
                 config.labelWidth = parseInt(config.site.sizes.sx * config.widgetIndent + config.site.sizes.cx * (config.widgetIndent - 1)) - 12;
                 config.widgetWidth = (config.pickerType.startsWith('popup')) ? config.width : config.width-config.widgetIndent;
                 config.horizontalScale = 1;
@@ -344,7 +344,7 @@ module.exports = function(RED) {
                     }
                 } else {
                     config.widgetWidthPx = parseInt(config.site.sizes.sx * config.widgetWidth + config.site.sizes.cx * (config.widgetWidth - 1)) - 12;
-                    config.iroWidth = config.widgetWidthPx;
+                    config.iroWidth = (config.layoutDirection==='horizontal') ? config.widgetHeightPx : config.widgetWidthPx;
                 }
 
                 config.groupWidth = parseInt(config.site.sizes.sx * config.width + config.site.sizes.cx * (config.width - 1)) - 12;
