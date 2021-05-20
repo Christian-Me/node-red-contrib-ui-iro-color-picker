@@ -422,7 +422,7 @@ module.exports = function(RED) {
                                 // No problem because the enable value is optional ...
                             }
                         }
-                        console.log('beforeEmit: ', newMsg);
+                        // console.log('beforeEmit: ', newMsg);
                         return { msg: newMsg };
                     },
 
@@ -636,16 +636,35 @@ module.exports = function(RED) {
                                 delete $scope.sendHold;
                             }
 
+                            if (msg.socketid) {
+                                console.log('msg discarded: socketid present - exiting');
+                                return;
+                            }
                             // exit here during 'sliding'
-                            if (msg.socketid) return;
-                            if ($scope.inputStarted) return;
+                            if ($scope.inputStarted) {
+                                console.log('msg discarded: input started - exiting');
+                                return;
+                            }
+                            // exit if msg == lastSend
+                            if ($scope.lastSent===JSON.stringify(msg.state)) {
+                                console.log('msg discarded: msg.state == lastSend - exiting');
+                                return;
+                            }
                             
+                            /*
                             // reset coolDown flag if last value is confirmed or exit
                             if ($scope.coolDown !== undefined) {
-                                if (iroColorValue !== $scope.coolDown) return;
+                                if (iroColorValue !== $scope.coolDown) {
+                                    console.log('msg discarded during cooldown - exiting');
+                                    return;
+                                }
                                 delete $scope.coolDown;
+                                console.log('Cooldown ended - exiting');
+                                return;
                             }
-                            console.log('color: ',iroColorValue,' last', $scope.lastData,' v:', $scope.iroColor.value, ' t:', $scope.iroColor.kelvin);
+                            */
+
+                            console.log('color: ',iroColorValue,' last', $scope.lastData);
                             $scope.iroColorValue = iroColorValue;
                             
                             // update color picker if available 
