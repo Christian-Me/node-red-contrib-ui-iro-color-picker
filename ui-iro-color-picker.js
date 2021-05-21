@@ -412,7 +412,7 @@ module.exports = function(RED) {
                                     if (msg.hasOwnProperty(paramter)) {
                                         newMsg[paramter] = RED.util.getMessageProperty(msg, paramter);
                                     }
-                                }
+                                });
                             } 
                             catch(err) {
                                 // No problem because the state field is optional ...
@@ -598,7 +598,7 @@ module.exports = function(RED) {
                                 disable(!msg.enable);
                                 return;
                             }                      
-                            console.log('color received:',msg,' current:', ($scope.iroColor === undefined) ? 'undefined' : $scope.iroColor.hex8String);
+                            console.log('color received:',msg);
 
                             // utilize the iro.Color API build in iro.js and update $scope.iroColorValue to 64bit RGBA string
                             if ($scope.iroColor === undefined) {
