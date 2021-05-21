@@ -395,6 +395,7 @@ module.exports = function(RED) {
 */
 
                     beforeEmit: function(msg, value) {
+                        const iroParameters = ['kelvin','red','green','blue','value','saturation','alpha','hue','index'];
                         var newMsg = {};
                         // console.log('beforeEmit: ',msg,value);
                         if (msg) {
@@ -407,8 +408,11 @@ module.exports = function(RED) {
                             try {
                                 // Get the new state value from the specified message field
                                 newMsg.state = RED.util.getMessageProperty(msg, config.stateField || "payload");
-                                newMsg.kelvin = RED.util.getMessageProperty(msg, "kelvin");
-                                newMsg.value = RED.util.getMessageProperty(msg, "value");
+                                iroParameters.forEach(paramter => {
+                                    if (msg.hasOwnProperty(paramter)) {
+                                        newMsg[paramter] = RED.util.getMessageProperty(msg, paramter);
+                                    }
+                                }
                             } 
                             catch(err) {
                                 // No problem because the state field is optional ...
