@@ -52,7 +52,7 @@ in addition the following input formats are supported to set individual paramete
 - `msg.alpha` 0 - 1
 - `msg.kelvin` 2.000 - 40.0000
 
-if a numeric `msg.payload` is received it is assumed that the value corresponds to the output format. **In this case the output format has be set to a single value format too!**
+if a numeric `msg.payload` is received it is assumed that the value corresponds to the output format. **In this case the output format has to be set to a single value format!**
 
 Send `msg.enable` **false** to disable the widget.
 
@@ -113,11 +113,11 @@ iro.js offers a variety of different color picker styles. These can be combined 
 
 ## Changelog
 
-### 0.0.4
+### 0.0.7
 - partial fix for safari issue: Display seams OK but taps/clicks are still poking through **any support appreciated**
 - single value payloads
 - extra output format for tunable whites `{v:100,t:6000}` **experimental**
-- fix for single hue slider
+- fix for single hue slider (default color is set to red `{r:255,g:0,b:0}`)
 - msg.topic defaults correctly
 - hsl and hsla output fixed
 - fixes for horizontal stacking

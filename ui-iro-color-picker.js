@@ -149,8 +149,8 @@ module.exports = function(RED) {
                     if (positionTop<5) positionTop = 5;
                     if (positionLeft<5) positionLeft = 5;
                     
-                    // console.log(positionLeft, e.clientX, e.layerX, ${config.widgetWidthPx/2}, e);
-                    // console.log(pickerType, positionTop, window.innerHeight, ${config.widgetHeightPx});
+                    //console.log(positionLeft, e.clientX, e.layerX, ${config.widgetWidthPx/2}, e);
+                    //console.log(pickerType, positionTop, window.innerHeight, ${config.widgetHeightPx});
 
                     modalContent.style.left = positionLeft + "px";
                     modalContent.style.top = positionTop + "px";
@@ -265,9 +265,11 @@ module.exports = function(RED) {
                 config.site = getSiteProperties();
                 config.type = config.layout;
                 config.width = (config.width == 0) ? parseInt(group.config.width) : parseInt(config.width);
-                if (config.widgetIndent<1 && config.label!=="") config.widgetIndent=1;
-                config.labelWidth = parseInt(config.site.sizes.sx * config.widgetIndent + config.site.sizes.cx * (config.widgetIndent - 1)) - 12;
-                config.widgetWidth = (config.pickerType.startsWith('popup')) ? config.width : config.width-config.widgetIndent;
+                var widgetIndent = config.widgetIndent;
+                if (widgetIndent<1 && config.label!=="") widgetIndent=1;
+                if (config.label==="") widgetIndent=0;
+                config.labelWidth = parseInt(config.site.sizes.sx * widgetIndent + config.site.sizes.cx * (widgetIndent - 1)) - 12;
+                config.widgetWidth = (config.pickerType.startsWith('popup')) ? config.width : config.width-widgetIndent;
                 config.horizontalScale = 1;
                 config.widgetBox = {
                     horizontalPx : parseInt(config.site.sizes.sx * config.widgetWidth + config.site.sizes.cx * (config.widgetWidth - 1)) - 12,
@@ -496,7 +498,7 @@ module.exports = function(RED) {
                                 default:
                                     colorToSend = color[$scope.config.outFormat];
                             }
-                            console.log('colorUpdate:',$scope.iroColorValue,colorHex8String);
+                            // console.log('colorUpdate:',$scope.iroColorValue,colorHex8String);
                             if ($scope.iroColorValue!==colorHex8String || (send && $scope.lastSent!==JSON.stringify(colorToSend))) { // limit updates to "new" colors
                                 $scope.iroColorValue = colorHex8String;
                                 if ($scope.btn) $scope.btn.style["background-color"] = colorHex8String;
@@ -528,7 +530,7 @@ module.exports = function(RED) {
                             $scope.opts.color = $scope.iroColorValue;
                             $scope.iroColorPicker = new iro.ColorPicker(iroDiv, $scope.opts);
                             $scope.iroColorPicker.on('input:start', function (color) {
-                                console.log('input started', color.hex8String);
+                                // console.log('input started', color.hex8String);
                                 $scope.inputStarted = true;
                                 $scope.btn = document.getElementById(`colorButton-${$scope.config.id}`);
                                 if ($scope.config.backgroundVariable) {
@@ -538,11 +540,11 @@ module.exports = function(RED) {
                             $scope.iroColorPicker.on('input:end', function (color) {
                                 $scope.inputStarted = false;
                                 $scope.coolDown = color.hex8String;
-                                console.log('input ended', color.hex8String);
+                                // console.log('input ended', color.hex8String);
                                 colorUpdate(color);
                             });
                             $scope.iroColorPicker.on('input:move', function (color) {
-                                console.log('input moved: ', color.hex8String);
+                                // console.log('input moved: ', color.hex8String);
                                 colorUpdate(color, ($scope.config.dynOutput==='input:move'));
                             });
                         }
@@ -571,7 +573,7 @@ module.exports = function(RED) {
                                     "options": component.options
                                 });
                             });
-                            console.log('init',$scope.opts);
+                            // console.log('init',$scope.opts);
                             var stateCheck = setInterval(function() {
                                 if (document.querySelector(iroDiv)) {
                                     clearInterval(stateCheck);
@@ -598,7 +600,7 @@ module.exports = function(RED) {
                                 disable(!msg.enable);
                                 return;
                             }                      
-                            console.log('color received:',msg);
+                            // console.log('color received:',msg);
 
                             // utilize the iro.Color API build in iro.js and update $scope.iroColorValue to 64bit RGBA string
                             if ($scope.iroColor === undefined) {
@@ -668,7 +670,7 @@ module.exports = function(RED) {
                             }
                             */
 
-                            console.log('color: ',iroColorValue,' last', $scope.lastData);
+                            // console.log('color: ',iroColorValue,' last', $scope.lastData);
                             $scope.iroColorValue = iroColorValue;
                             
                             // update color picker if available 
