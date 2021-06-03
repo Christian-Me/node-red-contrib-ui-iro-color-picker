@@ -1,27 +1,34 @@
 node-red-contrib-ui-iro-color-picker
 ====================================
 
-Alternative color picker node utilizing the [iro.js](https://iro.js.org) widget. The main credit goes to [James](https://jamesdaniel.dev/), thank you for this nice widget.
+Color picker node utilizing the [iro.js](https://iro.js.org) widget.
 
 The node-red node is highly customizable inside the editor by choosing and combining several components either as a widget or a popup window.
 
-This is my first dashboard node so any input is highly appreciated.
-
-**My main goal of getting a colour picker on mobile devices usable with my thumb is not achieved jet. I could not solve the modal popup to be exclusively on top of everything else. If someone more experienced than I in safari or angular could perhaps help me:**
-
-# help needed
-- fix modal popup on safari (some other ui elements still are shown above the picker widget) Any iOS / Safari / webkit expert?
+**Finally the modal pickers work on iOS safari**
 
 ## screenshots
 
 ![as widget](https://raw.githubusercontent.com/Christian-Me/node-red-contrib-ui-iro-color-picker/master/doc/widgets.png)
+
 ![as popup](https://raw.githubusercontent.com/Christian-Me/node-red-contrib-ui-iro-color-picker/master/doc/popup.png)
+
+![on iOS device](https://raw.githubusercontent.com/Christian-Me/node-red-contrib-ui-iro-color-picker/master/doc/mobile.png)
 
 ## Install
 
 Either use the Editor - Menu - Manage Palette - Install option, or run the following command in your Node-RED user directory (typically `~/.node-red`) after installing Node-RED-dashboard.
 
     npm i node-red-contrib-ui-iro-color-picker
+
+## Examples
+
+Examples can be imported via **import/examples** in the top right menu of the editor
+
+1. `mixed widgets` (all auto size)
+2. `vertical sliders` (custom size, label above the widget)
+3. `compact buttons` (modal popups custom button size in a compact layout)
+4. `tuneable white` (special feature for tunable LEDs)
 
 ## Inputs
 Send `msg.payload` to this node to change the color of the color picker widget. The format can be any of the color formats iro.js supports
@@ -41,6 +48,9 @@ Send `msg.payload` to this node to change the color of the color picker widget. 
 - HSLA object: {h: 360, s: 50, l: 100, a: 1}
 - HSV object: {h: 360, s: 100, v: 50}
 - HSVA object: {h: 360, s: 100, v: 50, a: 1}
+and
+- Tuneable white `{v:100,t:6000}` **see output**
+
 
 in addition the following input formats are supported to set individual parameters
 - `msg.hue` 0 - 360
@@ -57,22 +67,39 @@ if a numeric `msg.payload` is received it is assumed that the value corresponds 
 Send `msg.enable` **false** to disable the widget.
 
 ## Outputs
-Node will send the color value as `msg.payload`. The format can be defined in the configuration dialog
+Node will send the color value as `msg.payload`. The format can be one of the input formats.
+
+- Tuneable white `{v:100,t:6000}` **experimental feature**
+    
+    As iro.js does not support tuneable white with variable value (i.e. tunable LEDs). Linking value and temperature sliders together the color temperature only effects the RGB model. Two slider instances will be created. The input and output will be linked. Iro.js don't allow value changes on the temperature slider! See [issue on github](github.com/jaames/iro.js/discussions/188) for details
+    
+    If **tunable white** is selected as output The Input can be `msg.value`, `msg.kelvin` or `{v:100,t:6000}`. 
+    
+    **Please select a *value* and *kelvin* picker ONLY**
 
 ## General configuration
 
+- **Size**:
+    - in most cases the picker works best in auto mode. Custom sizes should be considered when using vertical sliders or popup modal sliders with smaller button size.
 - **Label**:
     - a text string to show on the left
-    - an indent for the widget to align the widget nicely 
+    - an indent for the widget to align the widget nicely (as grid units)
+    - **placement** the label can be placed on the *left* or *above* the widget or button.
+    - **Align**  the label can be aligned horizontally (*left, center or right*) and vertically (*top, middle, bottom*)
+- **initial color**
+    - an initial color can be specified
 - **Type**:
-    The node can showup as a widget or a popup window
-    - as widget the picker will be placed in the remaining space left by the label. Depending of the selected components the widget will take the necessary height or scaled to fit.
-    - *popup center click* centered to the current mouse position
-    - *popup center group* centered to the group
-    - *popup center window* centered in the browser window
-    - if as popup the widget can be scaled relative to the group width
-    - the background color and alpha can be specified
-    - the background can follow the picked color
+    The picker can showup as a widget or a popup window
+    - **as widget**
+        - as widget the picker will be placed in the remaining space left or under the label. Depending of the selected components the widget will take the necessary height or scaled to fit.
+    - **as popup**
+        - *popup center button* centered to the button position
+        - *popup center group* centered to the group
+        - *popup center window* centered in the browser window
+        - widget **width** can be scaled relative to the group
+        - **button** sized in grids
+        - the background **color** and **alpha** can be specified
+        - the background can follow the **picked** color
 - **bypass messages** select this to pass all incoming messages to the output
 - **send**
     - **when released** send a message when the user release the mouse button
@@ -88,7 +115,7 @@ Node will send the color value as `msg.payload`. The format can be defined in th
 
 iro.js offers a variety of different color picker styles. These can be combined as required showing a part of the color definition
 
-- **direction** the components can be arranged either vertically or horizontally
+- **stacking** the components can be arranged either vertically (on above the next) or horizontally (one beside the next)
 - **components** a combination out of several components can be selected and sorted. 
     - Each component has these general options
         - **border** color
@@ -113,8 +140,17 @@ iro.js offers a variety of different color picker styles. These can be combined 
 
 ## Changelog
 
+### 0.1.0
+- fixes modal issue on iOS
+- positioning and aligning of labels
+- flexible button size
+- *fixed:* scaling and positioning of widgets and popups
+- support of tunable white (value and temperature)
+- custom initial color
+- several bugfixes
+
 ### 0.0.7
-- partial fix for safari issue: Display seams OK but taps/clicks are still poking through **any support appreciated**
+- partial fix for safari issue: Display seams OK but taps/clicks are still poking through
 - single value payloads
 - extra output format for tunable whites `{v:100,t:6000}` **experimental**
 - fix for single hue slider (default color is set to red `{r:255,g:0,b:0}`)

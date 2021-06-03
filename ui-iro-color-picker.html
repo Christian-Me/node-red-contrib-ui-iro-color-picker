@@ -227,10 +227,34 @@
 //
 //********************************************************************************* BEGIN USER DEFINED DEFAULT VALUES
             label: {value:''},
+            placement: {value: 'left'},
+            hAlign: {value: 'left'},
+            vAlign: {value: 'top'},
             stateField: {value: 'payload'},
             enableField: {value: 'enable'},            
             layoutDirection: {value:'vertical'},
-            widgetIndent: {value: '3'},
+            widgetIndent: {
+                value: '3',
+                validate: function(v) {
+                    var valid = true
+                    var width = v||0;
+                    var currentGroup = $('#node-input-group').val()|| this.group;
+                    var groupNode = RED.nodes.node(currentGroup);
+                    valid = !groupNode || +width <= +groupNode.width;
+                    $("#node-input-sizeWidgetIndent").toggleClass("input-error",!valid);
+                    return valid;
+                }},
+            buttonWidth: {
+                value: '2',
+                validate: function(v) {
+                    var valid = true
+                    var width = v||0;
+                    var currentGroup = $('#node-input-group').val()|| this.group;
+                    var groupNode = RED.nodes.node(currentGroup);
+                    valid = !groupNode || +width <= +groupNode.width-this.widgetIndent;
+                    $("#node-input-sizeButtonWidth").toggleClass("input-error",!valid);
+                    return valid;
+                }},
             pickerType: {value: 'widget'},
             pickerSize: {value: '100'},
             backgroundDim: {value: '50'},
@@ -245,7 +269,7 @@
             passthru: {value: false},
             topic: {value: 'topic', validate: (RED.validators.hasOwnProperty('typedInput')?RED.validators.typedInput('topicType'):function(v) { return true})},
             topicType: {value: 'msg'},
-            iroColorValue: {h: 360, s: 100, v: 100},
+            iroColorValue: {value: '#FF0000'},
         },
 //********************************************************************************* END USER DEFINED DEFAULT VALUES
 //*********************************************************************************
@@ -575,6 +599,28 @@
                     $("#node-options-dynOutputMax").show();
                 }
             });
+            $('#node-input-outFormat').change(function(ev) {
+                if ($('#node-input-outFormat').val().startsWith('tuneable')) {
+                    $("#node-options-outFormat-note").show();
+                } else {
+                    $("#node-options-outFormat-note").hide();
+                }
+            });
+            $('#node-input-label').change(function(ev) {
+                if ($('#node-input-label').val().length>0) {
+                    $("#node-options-label-options").show();
+                } else {
+                    $("#node-options-label-options").hide();
+                }
+            });
+            $("#node-input-sizeWidgetIndent").elementSizer({
+                width: "#node-input-widgetIndent",
+                auto: true
+            });
+            $("#node-input-sizeButtonWidth").elementSizer({
+                width: "#node-input-buttonWidth",
+                auto: true
+            });
             setTimeout(function() { node.tabs.resize();},0);
         },
         oneditsave: function() {
@@ -708,14 +754,39 @@
             <div class="form-row">
                 <label for="node-input-label"><i class="fa fa-i-cursor"></i> Label</span></label>
                 <input type="text" style="width: 40%;" id="node-input-label"/>
-                <label for="node-input-widgetIndent"><i class="fa fa-indent"></i> Indent</span></label>
-                <input type="number" style="width: 10%;" id="node-input-widgetIndent"/>
+                <label for="node-input-widgetIndent" style="width: 15%;"><i class="fa fa-indent"></i> Indent</span></label>
+                <input type="hidden" id="node-input-widgetIndent">
+                <button class="editor-button" id="node-input-sizeWidgetIndent"></button>
             </div>
+            <div class="form-row" id="node-options-label-options" style="display:none">
+                <label for="node-input-placement"><i class="fa fa-exchange"></i> Placement</label>
+                <select id="node-input-placement" style="width: 17%;">
+                    <option value="left">left</option>
+                    <option value="above">above</option>
+                </select>
+                <label for="node-input-hAlign" style="width: 15%;">&nbsp;<i class="fa fa-th"></i> Align</label>
+                <select id="node-input-hAlign" style="width: 17%;">
+                    <option value="flex-start">left</option>
+                    <option value="center">center</option>
+                    <option value="flex-end">right</option>
+                </select>
+                <select id="node-input-vAlign" style="width: 17%;">
+                    <option value="flex-start">top</option>
+                    <option value="center">middle</option>
+                    <option value="flex-end">bottom</option>
+                </select>
+            </div>
+            <hr>
+            <div class="form-row">
+                <label for="node-input-iroColorValue"><i class="fa fa-circle-o-notch "></i>&nbsp;Initial Color</label>
+                <input id="node-input-iroColorValue" type="color" style="width: 15%;"/>
+            </div>
+            <hr>
             <div class="form-row">
                 <label for="node-input-pickerType"><i class="fa fa-tachometer"></i> Type</label>
                 <select id="node-input-pickerType">
                     <option value="widget">as widget</option>
-                    <option value="popupCC">popup center click</option>
+                    <option value="popupCC">popup center button</option>
                     <option value="popupCG">popup center group</option>
                     <option value="popupCW">popup center window</option>
                 </select>
@@ -724,18 +795,22 @@
                 <div class="form-row">
                     <label for="node-input-pickerSize" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-arrows-h"></i> Width</label>
                     <input id="node-input-pickerSize" type="number" min=10 max=500 step=10 style="width: 15%;"/>
-                    <label for="node-input-pickerSize" style="width: 30%;"> % of group width</label>
+                    <label for="node-input-pickerSize" style="width: 25%;"> % of group</label>
+                    <label for="node-input-buttonWidth" style="width: 15%;"><i class="fa fa-mouse-pointer"></i> Button</label>
+                    <input type="hidden" id="node-input-buttonWidth"/>
+                    <button class="editor-button" id="node-input-sizeButtonWidth"></button>
                 </div>
                 <div class="form-row">
                     <label for="node-input-backgroundColor" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-circle-o-notch "></i>&nbsp;Color</label>
                     <input id="node-input-backgroundColor" type="color" style="width: 15%;"/>
                     <input type="checkbox" checked id="node-input-backgroundVariable" style="display:inline-block; width:auto; vertical-align:middle;">
-                    <label style="width:auto" for="node-input-backgroundVariable">&nbsp;picked</label>
-                    <label for="node-input-backgroundDim" style="width: 15%; text-align: right;"><i class="fa fa-undo"></i>&nbsp;&nbsp;Alpha</label>
+                    <label for="node-input-backgroundVariable" style="width: 20%;">&nbsp;picked</label>
+                    <label for="node-input-backgroundDim" style="width: 12%;">&nbsp;Alpha</label>
                     <input id="node-input-backgroundDim" type="number" min=0 max=100 step=1 style="width: 10%;"/>
-                    <label for="node-input-backgroundDim">&nbsp;%</label>
+                    <label for="node-input-backgroundDim" style="width: 5%;">&nbsp;%</label>
                 </div>
             </div>
+            <hr>
             <div class="form-row">
                 <label style="width:auto" for="node-input-passthru"><i class="fa fa-arrow-right"></i> If <code>msg</code> arrives on input, pass through to output: </label>
                 <input type="checkbox" checked id="node-input-passthru" style="display:inline-block; width:auto; vertical-align:top;">
@@ -781,7 +856,7 @@
                     <option value="saturation">saturation 0..100</option>
                     <option value="value">value 0..100</option>
                     <option value="kelvin">kelvin 1000..40000</option>
-                    <option value="tuneable">tuneable white {v:100%,t:40000}</option>
+                    <option value="tuneable">tuneable white {v:100,t:40000}</option>
                 </select>
             </div>
             <div class="form-row">
@@ -793,6 +868,10 @@
             <div class="form-row">
                 <label for="node-input-name"><i class="icon-tag"></i> Name</label>
                 <input type="text" id="node-input-name" placeholder="Name">
+            </div>
+            </br>
+            <div id="node-options-outFormat-note" class="form-tips" style="max-width: none; display:none; color:orangered">
+                <p>For tuneable white output please add a value and temperature slider component!</br>Use only value, kelvin or tuneable white as input format.</p>
             </div>
         </div>
         <div id="iro-tab-config" style="display:none">

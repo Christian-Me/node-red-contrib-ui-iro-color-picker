@@ -1,4 +1,3 @@
-/* eslint-disable indent */
 /**
  * Copyright 2021 Christian Meinert
  *
@@ -15,181 +14,77 @@
  * limitations under the License.
  **/
 
-
-/*************************************************************************
- * !!REQUIRED!!
- * A ui-node must always begin with the following function.
- * module.exports = function(RED) {your code here}
- * There is no need to edit this line.
- */
-
 var path = require('path');
 
 module.exports = function(RED) {
 
-//*************************************************************************
-    // var settings = RED.settings;  // optional - only needed if required later
-
-
-/**********************************************************************
- * !!REQUIRED!!
- *
- * A ui-node must always contain the function HTML(config) {}
- *
- * This function will generate the HTML (as a text string) which will be showed in the browser
- * on the dashboard.
- *
- * The 'config' input contains all the node properties, which can be changed by the user on
- * the node's config screen (in the flow editor).
- *
- * In this function 3 AngularJs directives are being demonstrated:
- *  -> ng-init is required to transfer the node configuration from the Node-RED flow to the dashboard.
- *  -> ng-model is used to make sure the data is (two way) synchronized between the scope and the html element.
- *          (the 'textContent' variable on the AngularJs $scope is called the 'model' of this html element.
- *  -> ng-change is used to do something (e.g. send a message to the Node-RED flow, as soon as the data in the model changes.
- *  -> ng-keydown is used to do something when the user presses a key. (e.g., type a value into a textbox, then press enter)
- **********************************************************************/
-
     function HTML(config) {
-        // The configuration is a Javascript object, which needs to be converted to a JSON string
-        var configAsJson = JSON.stringify(config);
+        var configAsJson = JSON.stringify(config).replace(/[\/\(\)\']/g, "&apos;");
 
-        // var html = String.raw`
-        // <input type='text' style='color:` + config.textColor + `;' ng-init='init(` + configAsJson + `)' ng-model='textContent' ng-change='change()'>
-        // `;
-        // return html;
         var html;
-        
-        if (config.pickerType.startsWith('popup')) {
+
             html = String.raw`
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <style>
-
-            .iro-color-container{
-                display:flex;
-                width:100%;
-                margin:auto;
-            }
-
-            .iro-color-disabled{
-                opacity: 0.4 !important;
-                pointer-events: none !important;
-            }
-
-            /* Modal Background */
-            .modal {
-              display: none; /* Hidden by default */
-              -webkit-transform:translate3d(0,0,100px);
-              transform: translate3d(0, 0, 100px);
-              position: fixed;
-              z-index: 10 !important; /* Sit on top */
-              /* padding-top: 100px;  Location of the box */
-              left: 0;
-              top: 0;
-              width: 100%; /* Full width */
-              height: 100%; /* Full height */
-              -webkit-overflow-scrolling: none;
-        	  overflow: hidden;
-              background-color: rgb(0,0,0); /* Fallback color */
-              background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
-            }
-            
-            /* Modal Content */
-            .modal-content {
-              background-color: rgba(0,0,0,0);
-              position: absolute;
-              display: block;
-            }
-            
-            </style>
-            
-            <script type='text/javascript' src='ui-iro-color-picker/js/iro.min.js'></script>
-
-            <div class="iro-color-container" id="iro-color-container-${config.id}" style="display:flex; flex-direction: row;" ng-init='init(` + configAsJson + `)'>
-                <div ng-if="${config.label != ""}" style="width:${config.labelWidth}px;">${config.label}</div>          
-                <button id="colorButton-${config.id}" class="md-raised md-button md-ink-ripple" type="button" style="width:100px;" color='{{colorHex || config.site.theme["widget-backgroundColor"].value}}'>&nbsp;</Button>
-            </div>
-            
-            <!-- The Modal -->
-            <div id="colorModal-${config.id}" class="modal">
-            
-              <!-- Modal content -->
-              <div class="modal-content" id="modal-content-${config.id}" style="width:${config.widgetWidthPx}px;">
-                <!-- <span id="colorModal-close-${config.id}" class="close">&times;</span> -->
-                <div id='ui_iro_color_picker-{{$id}}' style="width:${config.widgetWidthPx}px; background-color:unset; border:unset;"></div>
-              </div>
-            
-            </div>
-            
-            <script>
-                // When the user clicks the button, open the modal 
-                document.getElementById("colorButton-${config.id}").onclick = function(e) {
-                    var modal = document.getElementById("colorModal-${config.id}");
-                    var modalContent = document.getElementById("modal-content-${config.id}");
-                    modal.style.backgroundColor = '${config.backgroundColor}'+Math.floor(${config.backgroundDim / 100*255}).toString(16);
-                    
-                    var positionLeft = 0;
-                    var positionTop = 0;
-                    var pickerType = '${config.pickerType}';
-                    switch (pickerType) {
-                        case 'popupCW': 
-                            positionTop = (window.innerHeight /2  - ${config.widgetHeightPx/2});
-                            positionLeft = (window.innerWidth /2  - ${config.widgetWidthPx/2});
-                            break;
-                        case 'popupCG':
-                            positionTop = (e.clientY - e.layerY - ${config.widgetHeightPx/2});
-                            positionLeft = (e.clientX - e.layerX - ${config.widgetWidthPx/2} + 35);
-                            break;
-                            case 'popupCC':
-                            positionTop = (e.clientY - ${config.widgetHeightPx/2});
-                            positionLeft = (e.clientX - ${config.widgetWidthPx/2});
-                        break;
+                <style>
+                    .iro-color-container{
+                        display:flex;
+                        width:100%;
+                        margin:auto;
                     }
-                    if (positionTop + ${config.widgetHeightPx} > window.innerHeight) positionTop = window.innerHeight - ${config.widgetHeightPx};
-                    if (positionTop<5) positionTop = 5;
-                    if (positionLeft<5) positionLeft = 5;
-                    
-                    //console.log(positionLeft, e.clientX, e.layerX, ${config.widgetWidthPx/2}, e);
-                    //console.log(pickerType, positionTop, window.innerHeight, ${config.widgetHeightPx});
 
-                    modalContent.style.left = positionLeft + "px";
-                    modalContent.style.top = positionTop + "px";
-                    modal.style.display = "flex";
-                    document.ontouchmove = (e) => e.preventDefault();
-
-                    // When the user clicks anywhere outside of the modal, close it
-                    window.onclick = function(event) {
-                        var modal = document.getElementById("colorModal-${config.id}");
-                        if (event.target == modal) {
-                            document.ontouchmove = (e) => true;
-                            modal.style.display = "none";
-                        }
+                    .iro-color-disabled{
+                        opacity: 0.4 !important;
+                        pointer-events: none !important;
                     }
-                }
-                
-            </script>
-            `;
-            } else {
-                html = String.raw`
+
+                    .iro-color-label{
+                        padding:3px 6px 3px 6px;
+                    }
+
+                    .iro-color-widget{
+                        padding:3px 6px 3px 6px;
+                        display:flex;
+                        margin:auto;
+                        flex-direction: column;
+                    }
+
+                    .iro-color-button{
+                        padding:3px 6px 3px 6px;
+                    }
+
+                    /* Modal Background */
+                    .modal {
+                        display:flex;
+                        position: fixed;
+                        z-index: 100 !important; /* Sit on top */
+                        left: 0;
+                        top: 0;
+                        width: 100%; /* Full width */
+                        height: 100%; /* Full height */
+                        -webkit-overflow-scrolling: none;
+                        overflow: hidden;
+                        background-color: rgb(0,0,0); /* Fallback color */
+                        background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+                    }
+                    
+                    /* Modal Content */
+                    .modal-content {
+                        background-color: rgba(0,0,0,0);
+                        position: relative;
+                        display: block;
+                        margin: auto;
+                    }
+                </style>
+
                 <script type='text/javascript' src='ui-iro-color-picker/js/iro.min.js'></script>
-                <div class="iro-color-container" id="iro-color-container-${config.id}" style="display:flex; flex-direction: row;" ng-init='init(` + configAsJson + `)'>
-                    <div ng-if="${config.label != ""}" id="iro-color-label-${config.id}" style="width:${config.labelWidth}px;">${config.label}</div>          
-                    <div id='ui_iro_color_picker-{{$id}}' style="width:${config.widgetWidthPx}px; background-color:unset; border:unset;"></div>
+                <div class="iro-color-container" id="iro-color-container-${config.id}" style="display:flex; flex-direction: ${(config.placement==='above') ? "column" : "row"};" ng-init='init(` + configAsJson + `)'>
+                    <div ng-if="${config.label != ""}" class="iro-color-label" id="iro-color-label-${config.id}" style="display:flex; justify-content:${config.hAlign}; align-items:${config.vAlign};  width:${(config.placement==='above') ? `unset` : (config.labelWidth-12)+'px'}; height:${config.labelHeight}px;">${config.label}</div>
+                    <!-- ${(config.placement==='above') ? "</br>" : ""} -->         
                 </div>
-            `;
+                `;
 
+            return html;
         }
-        return html;
-    }
 
-/********************************************************************
-* REQUIRED
-* A ui-node must always contain the following function.
-* This function will verify that the configuration is valid
-* by making sure the node is part of a group. If it is not,
-* it will throw a "no-group" error.
-* You must enter your node name that you are registering here.
-*/
     function checkConfig(node, conf) {
         if (!conf || !conf.hasOwnProperty("group")) {
             node.error(RED._("ui_iro-color-picker.error.no-group"));
@@ -198,30 +93,8 @@ module.exports = function(RED) {
         return true;
     }
 
-/********************************************************************
-*********************************************************************
-* !!REQUIRED!!
-*
-* UI Variable Define
-*
-* Define a variable to reference the ui.
-* There is no need to edit this line.
-*/
-
     var ui = undefined;
 
-/*********************************************************************/
-
-
-/*********************************************************************
-* !!REQUIRED!!
-+
-* A ui-node must always contain a YourNodeNameHere(config) function, which will be executed in the Node-RED flow.
-* This function will add the widget to the dashboard, based on the 'required' node properties.  On the other hand
-* our own custom node properties will most probably not be used here, but only in the above HTML function (where
-* all properties are available in the config variable).
-*
-*/
     function iroColorPickerUINode(config) {
         try {
             var node = this;
@@ -230,10 +103,6 @@ module.exports = function(RED) {
             }
             RED.nodes.createNode(this, config);
 
-            // placing a "debugger;" in the code will cause the code to pause its execution in the web browser
-            // this allows the user to inspect the variable values and see how the code is executing.
-            // Remove those statements when you publish your node on NPM!!!
-            //debugger;
             if (checkConfig(node, config)) {
                 // Add default values to older nodes (version 1.0.0)
                 config.stateField = config.stateField || 'payload';
@@ -259,50 +128,76 @@ module.exports = function(RED) {
                     }
                     return opts
                 }
+
+                var getUiControl = function () {
+                    return {
+                        color : "#ffffff",
+                        borderWidth : 0,
+                        borderColor : "#ffffff",
+                        padding : 6,
+                        margin : 12,
+                        handleRadius: 8,
+                        activeHandleRadius: 8,
+                        handleSvg: null,
+                        handleProps: { x: 0, y: 0 },
+                        wheelLightness: true,
+                        wheelAngle: 0,
+                        wheelDirection: "anticlockwise",
+                        sliderSize: 28
+                    }
+                }
     
                 var group = RED.nodes.getNode(config.group);
                 config.groupId = group.id;
                 config.site = getSiteProperties();
+                config.ui_control = getUiControl();
                 config.type = config.layout;
-                config.width = (config.width == 0) ? parseInt(group.config.width) : parseInt(config.width);
+                config.totalWidth = (config.width == 0) ? parseInt(group.config.width) : parseInt(config.width);
                 var widgetIndent = config.widgetIndent;
-                if (widgetIndent<1 && config.label!=="") widgetIndent=1;
-                if (config.label==="") widgetIndent=0;
-                config.labelWidth = parseInt(config.site.sizes.sx * widgetIndent + config.site.sizes.cx * (widgetIndent - 1)) - 12;
-                config.widgetWidth = (config.pickerType.startsWith('popup')) ? config.width : config.width-widgetIndent;
+                if (widgetIndent<1 && config.label!=="") widgetIndent=3;
+                if (config.placement==='above') widgetIndent=0;
+                if (config.label==="") {
+                    widgetIndent = 0;
+                    config.labelWidth = 12;
+                } else {
+                    config.labelWidth = parseInt(config.site.sizes.sx * widgetIndent + config.site.sizes.cx * (widgetIndent - 1)) - 12;
+                }
+                config.widgetWidth = (config.pickerType.startsWith('popup')) ? config.totalWidth : config.totalWidth-widgetIndent;
                 config.horizontalScale = 1;
                 config.widgetBox = {
-                    horizontalPx : parseInt(config.site.sizes.sx * config.widgetWidth + config.site.sizes.cx * (config.widgetWidth - 1)) - 12,
+                    horizontalPx : parseInt(config.site.sizes.sx * config.widgetWidth + config.site.sizes.cx * (config.widgetWidth - 1)),
                     verticalPx : 0,
                     horizontalGrid : config.widgetWidth,
                     verticalGrid : 0,
                 }
-                
                 // calculate an ideal rectangle for all components
                 config.components.forEach(component => {
                     switch (component.componentId) {
                         case 'picker' :
                             config.widgetBox.verticalGrid += config.widgetBox.horizontalGrid;
-                            config.widgetBox.verticalPx += config.widgetBox.horizontalGrid * (config.site.sizes.sy+config.site.sizes.cy)
+                            config.widgetBox.verticalPx += config.widgetBox.horizontalPx;
                             break;
                         case 'box' :
                             if (component.options!==undefined && component.options.hasOwnProperty('boxHeight') && component.options.boxHeight>0) {
                                 config.widgetBox.verticalGrid += Math.floor(component.options.boxHeight / (config.site.sizes.sy+config.site.sizes.cy)) + 1;
-                                config.widgetBox.verticalPx += component.options.boxHeight + config.site.sizes.cy;
+                                config.widgetBox.verticalPx += component.options.boxHeight;
                             } else {
                                 config.widgetBox.verticalGrid += config.widgetWidth;
-                                config.widgetBox.verticalPx += config.widgetWidth * (config.site.sizes.sy+config.site.sizes.cy)
+                                config.widgetBox.verticalPx += config.widgetBox.horizontalPx;
                             }
                             break;
                         case 'slider':
                             config.widgetBox.verticalGrid++;
-                            config.widgetBox.verticalPx += (config.site.sizes.sy+config.site.sizes.cy)
+                            config.widgetBox.verticalPx += config.ui_control.sliderSize;
                             break;
                     }
+                    config.widgetBox.verticalPx += config.ui_control.margin;
                 });
+                config.widgetBox.verticalGrid = Math.floor(config.widgetBox.verticalPx / (config.site.sizes.sy+config.site.sizes.cy)) + 1;
+                config.widgetBox.verticalPx -= config.ui_control.margin; // one margin to much!
 
                 config.iroWidth = config.widgetBox.horizontalPx;
-                // swap height and width if arraigned horizontally
+                // swap height and width if arranged horizontally
                 if (config.layoutDirection==='horizontal') {
                     let tempPx = config.widgetBox.verticalPx;
                     config.widgetBox.verticalPx=config.widgetBox.horizontalPx;
@@ -325,31 +220,56 @@ module.exports = function(RED) {
                     } else { // popups only need one grid for button
                         config.height=1;
                     }
-                    config.widgetHeightPx = config.widgetBox.verticalPx - 12;
+                    config.widgetHeightPx = config.widgetBox.verticalPx - 12 - 3;
                 } else {
                     config.height =parseInt(config.height);
                     config.widgetHeightPx = parseInt(config.site.sizes.sy * config.height + config.site.sizes.cy * (config.height - 1)) - 12;
+                    config.iroWidth = (config.layoutDirection==='horizontal') ? config.widgetHeightPx : config.widgetBox.horizontalPx;
+                    if (config.layoutDirection==='horizontal') config.widgetBox.verticalPx = config.iroWidth;
                 }
 
                 // setup and scale width for popup
                 if (config.pickerType.startsWith('popup')) {
+                    config.buttonWidthPx = (config.buttonWidth>0) ? parseInt(config.site.sizes.sx * config.buttonWidth + config.site.sizes.cx * (config.buttonWidth-1)) - 12 : 100;
+                    config.height = 1;
                     config.widgetWidthPx = config.widgetBox.horizontalPx;
-                    if (!config.pickerSize || Number(config.pickerSize)==NaN) {
-                        config.widthFactor=1;
-                    } else {
-                        config.widthFactor=Number(config.pickerSize)/100;
-                        if (config.widthFactor<0.1) config.widthFactor=0.1;
-                        if (config.widthFactor>5) config.widthFactor=5;
-                        config.widgetWidthPx = config.widgetWidthPx * config.widthFactor;
-                        config.widgetHeightPx = config.widgetHeightPx * config.widthFactor;
-                        config.iroWidth = config.iroWidth * config.widthFactor;
-                    }
+                    config.widthFactor=(!config.pickerSize || Number(config.pickerSize)==NaN) ? 1 : Number(config.pickerSize)/100;
+                    if (config.widthFactor<0.1) config.widthFactor=0.1;
+                    if (config.widthFactor>5) config.widthFactor=5;
+                    config.widgetWidthPx = config.widgetWidthPx * config.widthFactor;
+                    config.widgetHeightPx = config.widgetHeightPx * config.widthFactor;
+                    config.iroWidth = config.iroWidth * config.widthFactor;
+                    config.labelHeight = config.site.sizes.sy-12;
+                    if (config.layoutDirection==='horizontal') config.widgetBox.verticalPx *= config.widthFactor;
+                    if (config.layoutDirection==='vertical') config.widgetBox.horizontalPx *= config.widthFactor;
                 } else {
-                    config.widgetWidthPx = parseInt(config.site.sizes.sx * config.widgetWidth + config.site.sizes.cx * (config.widgetWidth - 1)) - 12;
-                    config.iroWidth = (config.layoutDirection==='horizontal') ? config.widgetHeightPx : config.widgetWidthPx;
+                    config.widgetWidthPx = parseInt(config.site.sizes.sx * config.widgetWidth + config.site.sizes.cx * (config.widgetWidth - 1)); // - 12;
+                    config.iroWidth = (config.layoutDirection==='horizontal') ? config.widgetHeightPx-4 : (config.label==="") ? config.widgetWidthPx -20 : config.widgetWidthPx;
+                    config.labelHeight = (config.widgetHeightPx * config.horizontalScale) -12;
                 }
 
-                config.groupWidth = parseInt(config.site.sizes.sx * config.width + config.site.sizes.cx * (config.width - 1)) - 12;
+
+                if (config.placement==='above') {
+                    config.widgetWidthPx -= 20;
+                    config.iroWidth -= 20;
+                    config.labelHeight = config.site.sizes.sy-12;
+                    if (!config.pickerType.startsWith('popup')) {
+                        if (config.layoutDirection==='horizontal') {
+                            config.labelWidth = config.widgetWidthPx;
+                            if (config.width==0) {
+                                config.widgetWidthPx = config.widgetBox.horizontalPx;
+                                config.labelWidth =  config.widgetWidthPx;   
+                            }
+                        } else {
+                            config.labelWidth = config.iroWidth * config.horizontalScale;
+                        }
+                    } else {
+                        config.width = (config.buttonWidth>0) ? config.buttonWidth : 2;
+                        config.labelWidth = config.buttonWidthPx;
+                    }
+                    config.height++;
+                }
+                config.groupWidth = parseInt(config.site.sizes.sx * config.totalWidth + config.site.sizes.cx * (config.totalWidth - 1)) - 12;
 
                 node.on("input", function(msg) {
                     node.topi = msg.topic;
@@ -372,29 +292,9 @@ module.exports = function(RED) {
                     forwardInputMessages: config.passthru,  // *REQUIRED* Edit this if you would like your node to forward the input message to it's ouput.
                     storeFrontEndInputAsState: true,        // *REQUIRED* If the widget accepts user input - should it update the backend stored state ?
 
-/********************************************************************
-
-/********************************************************************
-* !!REQUIRED!!
-*
-* Convert Back Function
-* Callback to convert sent message.
-*
-* TODO: Need help explaining this one.
-*/
-
                     convertBack: function (value) {
                         return value;
                     },
-
-/********************************************************************
-/********************************************************************
-* !!REQUIRED!!
-*
-* Before Emit Function
-* Callback to prepare message that is sent from the backend TO the widget
-*
-*/
 
                     beforeEmit: function(msg, value) {
                         const iroParameters = ['kelvin','red','green','blue','value','saturation','alpha','hue','index'];
@@ -432,14 +332,6 @@ module.exports = function(RED) {
                         return { msg: newMsg };
                     },
 
-/********************************************************************
-/********************************************************************
-* !!REQUIRED!!
-*
-* Before Send Function
-* Callback to prepare message FROM the UI before it is sent to next node
-*
-*/
                     beforeSend: function (msg, orig) {
                         // console.log('beforeSend:',msg,orig);
                         if (orig) {
@@ -453,31 +345,33 @@ module.exports = function(RED) {
                         }
                     },
 
-/********************************************************************
-/********************************************************************
-* !!REQUIRED!!
-*
-* Init Controller
-* Callback to initialize in controller.
-*
-* The initController is where most of the magic happens, to let the dashboard communicate with
-* the Node-RED flow.
-*/
                     initController: function($scope, events) {
                         // debugger;
                         var iroDiv;
                         $scope.flag = true;   // not sure if this is needed?
 
-/*******************************************************************
-/*******************************************************************
-*
-* STORE THE CONFIGURATION FROM NODE-RED FLOW INTO THE DASHBOARD
-* The configuration (from the node's config screen in the flow editor) should be saved in the $scope.
-* This 'init' function should be called from a single html element (via ng-init) in the HTML function,
-* since the configuration will be available there.
-*
-*/
                         const iroParameters = ['kelvin','red','green','blue','value','saturation','alpha','hue','index'];
+
+                        /**
+                        *  read $scope.colorToSend form picker color object
+                        *   @param  {object} color  iro.js color object
+                        *   @return {void}
+                        */
+                        var updateColorToSend = function (color) {
+                            switch ($scope.config.outFormat) {
+                                case 'tuneable':
+                                    if ($scope.colorToSend===undefined) $scope.colorToSend={};
+                                    if (color.sliderType==="value") {
+                                        $scope.colorToSend.v = color.value;
+                                    };   
+                                    if (color.sliderType==="kelvin") {
+                                        $scope.colorToSend.t = color.kelvin;
+                                    };                                    
+                                    break;
+                                default:
+                                    $scope.colorToSend = color[$scope.config.outFormat];
+                            }
+                        }
 
                         /**
                         *  updates the color if it is changed. Updates button and background if necessary
@@ -487,31 +381,50 @@ module.exports = function(RED) {
                         */
                         var colorUpdate = function (color, send = true) {
                             var colorHex8String = color.hex8String;
-                            var colorToSend;
-                            switch ($scope.config.outFormat) {
-                                case 'tuneable':
-                                    colorToSend = {
-                                        v: color.value,
-                                        t: color.kelvin
-                                    }
-                                    break;
-                                default:
-                                    colorToSend = color[$scope.config.outFormat];
-                            }
+                            updateColorToSend(color);
                             // console.log('colorUpdate:',$scope.iroColorValue,colorHex8String);
-                            if ($scope.iroColorValue!==colorHex8String || (send && $scope.lastSent!==JSON.stringify(colorToSend))) { // limit updates to "new" colors
+                            if ($scope.iroColorValue!==colorHex8String || (send && $scope.lastSent!==JSON.stringify($scope.colorToSend))) { // limit updates to "new" colors
                                 $scope.iroColorValue = colorHex8String;
                                 if ($scope.btn) $scope.btn.style["background-color"] = colorHex8String;
                                 if ($scope.modal) $scope.modal.style.backgroundColor = color.hexString + Math.floor($scope.config.backgroundDim / 100*255).toString(16);
                                 if (send && !$scope.sendHold) {
-                                    $scope.send({state:colorToSend});
-                                    $scope.lastSent = JSON.stringify(colorToSend);
+                                    $scope.send({state:$scope.colorToSend});
+                                    $scope.lastSent = JSON.stringify($scope.colorToSend);
                                     if ($scope.config.outputLimit && $scope.config.outputLimit>0) {
                                         $scope.sendHold = true;
                                         setTimeout(function () {delete $scope.sendHold;},1000/$scope.config.outputLimit);
                                     }
                                 }
                             }
+                            if ($scope.config.outFormat==="tuneable" && color.sliderType==="kelvin") {
+                                $scope.iroColorPicker.forEach(picker => {
+                                    if (picker.color.sliderType==='value') {
+                                        let value = picker.color.value;
+                                        picker.color.kelvin = color.kelvin; 
+                                        picker.color.value = value;
+                                        console.log('tuneable',picker.color.value,picker,color.kelvin);
+                                    }
+                                });
+                            };
+                        }
+
+                        /**
+                        *  creates an button to open modal iro.js popup
+                        *   -   destroys existing instance
+                        *   @return {void}
+                        */
+                        var createIroButton = function () {
+                            $scope.btn = document.createElement("div");
+                            $scope.btn.setAttribute("class", "md-raised md-button md-ink-ripple");
+                            $scope.btn.setAttribute("type", "button");
+                            $scope.btn.setAttribute("id", "iro-modal-button_"+$scope.config.id);
+                            $scope.btn.setAttribute("style", `background-color: ${$scope.iroColorValue}; min-width: unset; width:${$scope.config.buttonWidthPx}px; margin-top:0px`);
+                            $scope.btn.innerHTML = "&nbsp;"
+                            $scope.btn.addEventListener("click",  function(e) {
+                                $scope.colorButtonPress(e);
+                            });
+
+                            document.getElementById(`iro-color-container-${$scope.config.id}`).appendChild($scope.btn);
                         }
 
                         /**
@@ -524,28 +437,60 @@ module.exports = function(RED) {
                         *   @return {void}
                         */
                         var createIro = function () {
-                            if($scope.iroColorPicker !== undefined) {
-                                $scope.iroColorPicker.destroy();
+                            //console.log("createIro",$scope.config);
+                            if (!document.querySelector(iroDiv)) {
+                                // <div id='ui_iro_color_picker-{{$id}}' style="width:${config.widgetWidthPx}px; background-color:unset; border:unset;"></div>
+                                var pickerDiv = document.createElement("div");
+                                pickerDiv.setAttribute("class", 'iro-color-widget');
+                                pickerDiv.setAttribute("width", `${$scope.config.widgetWidthPx}px`);
+                                pickerDiv.setAttribute("id", 'ui_iro_color_picker-' + $scope.$eval('$id'));
+                                document.getElementById(`iro-color-container-${$scope.config.id}`).appendChild(pickerDiv);
                             }
-                            $scope.opts.color = $scope.iroColorValue;
-                            $scope.iroColorPicker = new iro.ColorPicker(iroDiv, $scope.opts);
-                            $scope.iroColorPicker.on('input:start', function (color) {
-                                // console.log('input started', color.hex8String);
-                                $scope.inputStarted = true;
-                                $scope.btn = document.getElementById(`colorButton-${$scope.config.id}`);
-                                if ($scope.config.backgroundVariable) {
-                                    $scope.modal = document.getElementById(`colorModal-${$scope.config.id}`);
+                            if($scope.iroColorPicker !== undefined) {
+                                $scope.iroColorPicker.forEach(picker => picker.destroy());
+                            }
+                            var minTemperature = 3000;
+                            if ($scope.config.outFormat==="tuneable") { // find min temperature
+                                $scope.opts.forEach(opts => {
+                                    if (opts.layout[0].options.sliderType==='kelvin') minTemperature=opts.layout[0].options.minTemperature;
+                                });
+                            }
+
+                            $scope.iroColorPicker = [];
+                            $scope.opts.forEach((opts,index) => {
+                                opts.color = $scope.iroColorValue;
+                                $scope.iroColorPicker.push(new iro.ColorPicker(iroDiv, opts));
+                                $scope.iroColorPicker[index].color.sliderType=opts.layout[0].options.sliderType;
+                                
+                                if ($scope.config.outFormat==="tuneable") { // default settings for tuneable sliders
+                                    $scope.iroColorPicker[index].color.kelvin = minTemperature;
+                                    if ($scope.iroColorPicker[index].color.sliderType==="value") $scope.iroColorPicker[index].color.value = 0
                                 }
-                            });
-                            $scope.iroColorPicker.on('input:end', function (color) {
-                                $scope.inputStarted = false;
-                                $scope.coolDown = color.hex8String;
-                                // console.log('input ended', color.hex8String);
-                                colorUpdate(color);
-                            });
-                            $scope.iroColorPicker.on('input:move', function (color) {
-                                // console.log('input moved: ', color.hex8String);
-                                colorUpdate(color, ($scope.config.dynOutput==='input:move'));
+                                updateColorToSend($scope.iroColorPicker[index].color);
+                                $scope.iroColorPicker[index].on('input:start', function (color) {
+                                    // console.log('input started', color.hex8String);
+                                    $scope.inputStarted = true;
+                                    $scope.btn = document.getElementById(`iro-modal-button_${$scope.config.id}`);
+                                    if ($scope.config.backgroundVariable) {
+                                        $scope.modal = document.getElementById(`colorModal-${$scope.config.id}`);
+                                    }
+                                });
+                                $scope.iroColorPicker[index].on('input:end', function (color) {
+                                    $scope.inputStarted = false;
+                                    $scope.coolDown = color.hex8String.hex8String;
+                                    // console.log('input ended', color);
+                                    colorUpdate(color);
+                                });
+                                $scope.iroColorPicker[index].on('input:move', function (color) {
+                                    // console.log('input moved: ', color.hex8String);
+                                    colorUpdate(color, ($scope.config.dynOutput==='input:move'));
+                                });
+                                if (index < $scope.opts.length-1) {
+                                    let spacerDiv = document.createElement("div");
+                                    spacerDiv.style.height = `${$scope.config.ui_control.margin}px`;
+                                    spacerDiv.style.width = `${$scope.config.widgetWidthPx}px`;
+                                    document.getElementById('ui_iro_color_picker-' + $scope.$eval('$id')).appendChild(spacerDiv);
+                                }
                             });
                         }
 
@@ -553,47 +498,50 @@ module.exports = function(RED) {
                             $scope.config = config;
                             iroDiv = '#ui_iro_color_picker-' + $scope.$eval('$id');
 
-                            // console.log(`init: $scope.config: ${$scope.config}`);
-                            // console.log("iroWidth: ",config.iroWidth);
-
-                            if ($scope.iroColorValue===undefined)  $scope.iroColorValue = {h: 360, s: 100, v: 100};
-                            $scope.opts={
-                                width: config.iroWidth * config.horizontalScale, // config.widgetWidthPx,
-                                handleRadius : 8 * config.horizontalScale,
-                                padding : 6 * config.horizontalScale,
-                                color: $scope.iroColorValue, // $scope.iroColorValue
-                                layoutDirection: config.layoutDirection,
-                                layout: [],
-                            };
-                            config.components.forEach(component => {
-                                $scope.opts.layout.push({
-                                    "component":    (component.componentId==='picker') ? iro.ui.Wheel :
-                                                    (component.componentId==='box') ? iro.ui.Box :
-                                                    (component.componentId==='slider') ? iro.ui.Slider : null,
-                                    "options": component.options
+                            if ($scope.config.outFormat==="tuneable") {
+                                if ($scope.iroColorValue===undefined)  $scope.iroColorValue = config.iroColorValue || {r: 255, g: 255, b: 255};
+                                $scope.opts = [];
+                                config.components.forEach((component,index) => {
+                                    if (component.options.sliderType==='kelvin' || component.options.sliderType==='value' ) {
+                                        $scope.opts.push({
+                                            width: config.iroWidth * config.horizontalScale, // config.widgetWidthPx,
+                                            handleRadius : 8 * config.horizontalScale,
+                                            padding : 6 * config.horizontalScale,
+                                            color: $scope.iroColorValue,
+                                            layoutDirection: config.layoutDirection,
+                                            layout: [{
+                                                "component": iro.ui.Slider,
+                                                "options": component.options
+                                            }],
+                                        });
+                                    }
                                 });
-                            });
-                            // console.log('init',$scope.opts);
-                            var stateCheck = setInterval(function() {
-                                if (document.querySelector(iroDiv)) {
-                                    clearInterval(stateCheck);
-                                    $scope.initialized = true;
-                                    createIro();
-                                }
-                            }, 100);
+                            } else {
+                                    if ($scope.iroColorValue===undefined)  $scope.iroColorValue = config.iroColorValue || {h: 360, s: 100, v: 100};
+                                    $scope.opts=[{
+                                        width: config.iroWidth * config.horizontalScale, // config.widgetWidthPx,
+                                        handleRadius : 8 * config.horizontalScale,
+                                        padding : 6 * config.horizontalScale,
+                                        color: $scope.iroColorValue,
+                                        layoutDirection: config.layoutDirection,
+                                        layout: [],
+                                    }];
+                                    config.components.forEach(component => {
+                                        $scope.opts[0].layout.push({
+                                            "component":    (component.componentId==='picker') ? iro.ui.Wheel :
+                                                            (component.componentId==='box') ? iro.ui.Box :
+                                                            (component.componentId==='slider') ? iro.ui.Slider : null,
+                                            "options": component.options
+                                    });
+                                });
+                            }
+                            if (config.pickerType.startsWith('popup')) {
+                                createIroButton();
+                            } else {
+                                createIro();
+                            }
                         };
 
-/*******************************************************************
-/*******************************************************************
-*
-* HANDLE MESSAGE FROM NODE-RED FLOW TO DASHBOARD
-* Use $scope.$watch 'msg' to manipulate your user interface when a message from the Node-RED flow arrives.
-* As soon as the message arrives in the dashboard, the callback function will be executed.
-* Inside the callback function, you can manipulate your node's HTML attributes and elements.  That way you
-* can update the dashboard based on data from the input message.
-* E.g. change the text color based on the value of msg.color.
-*
-*/
                         $scope.$watch('msg', function(msg) {
                             if (!msg) { return; } // Ignore undefined msg
                             if (msg.enable === true || msg.enable === false){
@@ -629,7 +577,7 @@ module.exports = function(RED) {
                             iroParameters.forEach(paramter => {
                                 if (msg.hasOwnProperty(paramter)) {
                                     $scope.iroColor[paramter] = Number(msg[paramter]);
-                                    $scope.lastData[paramter]=Number(msg[paramter]);
+                                    $scope.lastData[paramter] = Number(msg[paramter]);
                                     if (paramter==='kelvin' && $scope.lastData.hasOwnProperty('value')) $scope.iroColor.value = $scope.lastData.value;
                                 }
                             });
@@ -643,17 +591,17 @@ module.exports = function(RED) {
                             }
 
                             if (msg.socketid) {
-                                console.log('msg discarded: socketid present - exiting');
+                                //console.log('msg discarded: socketid present - exiting');
                                 return;
                             }
                             // exit here during 'sliding'
                             if ($scope.inputStarted) {
-                                console.log('msg discarded: input started - exiting');
+                                //console.log('msg discarded: input started - exiting');
                                 return;
                             }
                             // exit if msg == lastSend
                             if ($scope.lastSent===JSON.stringify(msg.state)) {
-                                console.log('msg discarded: msg.state == lastSend - exiting');
+                                //console.log('msg discarded: msg.state == lastSend - exiting');
                                 return;
                             }
                             
@@ -673,16 +621,37 @@ module.exports = function(RED) {
                             // console.log('color: ',iroColorValue,' last', $scope.lastData);
                             $scope.iroColorValue = iroColorValue;
                             
-                            // update color picker if available 
-                            if ($scope.iroColorPicker!==undefined && $scope.iroColorPicker.color!==undefined){
-                                $scope.iroColorPicker.color.set($scope.iroColorValue);
+                            // update color picker if available
+                            if ($scope.config.outFormat!=="tuneable") {
+                                if ($scope.iroColorPicker!==undefined && $scope.iroColorPicker[0]!==undefined && $scope.iroColorPicker[0].color!==undefined){
+                                    $scope.iroColorPicker[0].color.set($scope.iroColorValue);
+                                }
+                            } else { // handle tuneable white
+                                var newColor={
+                                    "kelvin" : (msg.kelvin) ? msg.kelvin : $scope.colorToSend.t,
+                                    "value" : (msg.value) ? msg.value : $scope.colorToSend.v
+                                };
+                                if (typeof msg.state === "object" && (msg.state.hasOwnProperty('v') && msg.state.hasOwnProperty('t'))) {
+                                    newColor.value = msg.state.v;
+                                    newColor.kelvin = msg.state.t;
+                                }
+                                console.log('new color:',newColor,msg);
+                                $scope.config.components.forEach((component,index) => {
+                                    if ($scope.iroColorPicker[index].color.sliderType==='value') {
+                                        console.log('newKelvin',newColor);
+                                        $scope.iroColorPicker[index].color.kelvin = newColor.kelvin;
+                                        $scope.iroColorPicker[index].color.value = newColor.value;
+                                    } else {
+                                        $scope.iroColorPicker[index].color[component.options.sliderType] = newColor[component.options.sliderType];
+                                    }
+                                    updateColorToSend($scope.iroColorPicker[index].color);
+                                });
+                                //console.log('colorToSend:',$scope.colorToSend);
                             }
-
                             // console.log('color set to ',$scope.iroColorValue);
-                            var btn = document.getElementById(`colorButton-${$scope.config.id}`);
-                            if (btn) {
-                                btn.style["background-color"]=$scope.iroColorValue;
-                            }
+
+                            if ($scope.btn) $scope.btn.style["background-color"]=$scope.iroColorValue;
+
                             if ($scope.config.backgroundVariable) {
                                 var modal = document.getElementById(`colorModal-${$scope.config.id}`);
                                 if (modal) {
@@ -691,42 +660,90 @@ module.exports = function(RED) {
                             }
                         });
 
-                    function disable(state){                            
-                        //true - widget disabled, false - widget enabled
-                        var container = document.getElementById("iro-color-container-"+$scope.config.id);
-                        if (!container) return;
-                        if(state == true){
-                            container.classList.add('iro-color-disabled');                    
+                        function disable(state){                            
+                            //true - widget disabled, false - widget enabled
+                            var container = document.getElementById("iro-color-container-"+$scope.config.id);
+                            if (!container) return;
+                            if(state == true){
+                                container.classList.add('iro-color-disabled');                    
+                            }
+                            else{
+                                container.classList.remove('iro-color-disabled');
+                            }
                         }
-                        else{
-                            container.classList.remove('iro-color-disabled');
-                        }
-                    }
-/*******************************************************************
-/*******************************************************************
-*
-* SEND MESSAGE FROM DASHBOARD TO NODE-RED FLOW
-* When the user has changed something in the dashboard, you can send the updated data to the Node-RED flow.
-*
-$scope.change = function() {
-    // The data will be stored in the model on the scope
-    $scope.send({payload: $scope.textContent});
-};
-*/
-/*******************************************************************/
-/*******************************************************************
-*
-* SEND MESSAGE FROM DASHBOARD TO NODE-RED FLOW
-* While an input has focus, the user can press the enter key to send the updated data to the Node-RED flow.
-*
-$scope.enterkey = function(keyEvent){
-    if (keyEvent.which === 13) {
-        $scope.send({payload: $scope.textContent});
-    }
-};
-*/
-/*******************************************************************/
 
+                        $scope.change = function() {
+                            // console.log('scope change');
+                            //$scope.send({payload: $scope.textContent});
+                        };
+
+                        $scope.colorButtonPress = function(e){
+                            if(document.getElementById(`colorModal-${$scope.config.id}`)) {
+                                document.getElementsByTagName("body")[0].removeChild(document.getElementById(`colorModal-${$scope.config.id}`));
+                            };
+
+                            var modal = document.getElementsByTagName("body")[0].appendChild(document.createElement("div"));
+                            modal.id=`colorModal-${$scope.config.id}`;
+                            modal.classList.add("modal");
+                            modal.style.backgroundColor = $scope.config.backgroundColor+Math.floor($scope.config.backgroundDim / 100*255).toString(16);
+                            
+                            var modalContent = modal.appendChild(document.createElement("div"));
+                            modalContent.id=`modal-content-${$scope.config.id}`;
+                            modalContent.classList.add("modal-content");
+                            
+                            var colorPicker = modalContent.appendChild(document.createElement("div"));
+                            colorPicker.setAttribute("id", 'ui_iro_color_picker-' + $scope.$eval('$id'));
+                            colorPicker.classList.add(`ui_iro_color_picker-${$scope.config.id}`);
+
+                            var positionLeft = undefined;
+                            var positionTop = undefined;
+                            var pickerType = $scope.config.pickerType;
+                            var widgetPos = undefined;
+                            
+                            switch (pickerType) {
+                                case 'popupCG':
+                                    widgetPos = document.getElementById(`iro-color-container-${$scope.config.id}`).getBoundingClientRect();
+                                    positionTop = widgetPos.y + widgetPos.height/2- $scope.config.widgetBox.verticalPx/2;
+                                    positionLeft = widgetPos.x + widgetPos.width/2 - $scope.config.widgetBox.horizontalPx/2;
+                                    break;
+                                case 'popupCC':
+                                    widgetPos = document.getElementById(`iro-modal-button_${$scope.config.id}`).getBoundingClientRect();
+                                    positionTop = widgetPos.y + widgetPos.height/2- $scope.config.widgetBox.verticalPx/2;
+                                    positionLeft = widgetPos.x + widgetPos.width/2 - $scope.config.widgetBox.horizontalPx/2;
+                                break;
+                            }
+
+                            var boxVerticalPx = $scope.config.widgetBox.verticalPx + $scope.config.ui_control.margin;
+                            var boxHorizontalPx = $scope.config.widgetBox.horizontalPx + 6;
+
+                            console.log('popup',$scope.config.widgetBox);
+
+                            if (positionTop + boxVerticalPx > window.innerHeight) positionTop = window.innerHeight - boxVerticalPx;
+                            if (positionLeft + boxHorizontalPx > window.innerWidth) positionLeft = window.innerWidth - boxHorizontalPx;
+                        
+                            if (positionTop<6) positionTop = 6;
+                            if (positionLeft<6) positionLeft = 6;
+                            
+                            if(positionLeft && positionTop){
+                                modalContent.style.marginLeft = positionLeft + "px";
+                                modalContent.style.marginTop = positionTop + "px";
+                            }
+                            modal.style.display = "flex";
+                            document.ontouchmove = (e) => e.preventDefault();
+                            createIro();
+
+
+                            // When the user clicks anywhere outside of the modal, close it
+                            window.onclick = function(event) {
+                                var modal = document.getElementById(`colorModal-${$scope.config.id}`);
+                                if (event.target == modal) {
+                                    delete $scope.iroColorPicker;
+                                    document.ontouchmove = (e) => true;
+                                    document.getElementsByTagName("body")[0].removeChild(document.getElementById(`colorModal-${$scope.config.id}`));
+                                }
+                            }
+
+                        };
                     }
                 });
             }
@@ -736,26 +753,14 @@ $scope.enterkey = function(keyEvent){
             console.warn(e);		// catch any errors that may occur and display them in the web browsers console
         }
 
-/*******************************************************************
-* !!REQUIRED!!
-* If you need to do any handling before closing do it here then call done().
-*/
+        // If you need to do any handling before closing do it here then call done().
         node.on("close", function() {
             if (done) {
                 done();
             }
         });
-/*******************************************************************/
     }
 
-
-/*******************************************************************
-* !!REQUIRED!!
-* Registers the node with a name, and a configuration.
-* You must enter the SAME name of your node you registered (in the html file) and enter the name
-* of the function (see line #87) that will return your nodes's configuration.
-* Note: the name must begin with "ui_".
-*/
     setImmediate(function() {
         RED.nodes.registerType("ui_iro-color-picker", iroColorPickerUINode);
 
