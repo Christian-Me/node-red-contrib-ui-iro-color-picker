@@ -6,6 +6,7 @@ Color picker node utilizing the [iro.js](https://iro.js.org) widget.
 The node-red node is highly customizable inside the editor by choosing and combining several components either as a widget or a popup window.
 
 **Finally the modal pickers work on iOS safari**
+For latest Updates see the change log in the end of this document.
 
 ## screenshots
 
@@ -139,6 +140,11 @@ iro.js offers a variety of different color picker styles. These can be combined 
             - maximum value (<40.000°K)
 
 ## Changelog
+
+### 0.1.1
+- initial color can be changed until a valid color is received
+- Editor Help window completed
+- German localization of the config UI and help text
 
 ### 0.1.0
 - fixes modal issue on iOS

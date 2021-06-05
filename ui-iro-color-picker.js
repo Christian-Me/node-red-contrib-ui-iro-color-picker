@@ -517,7 +517,16 @@ module.exports = function(RED) {
                                     }
                                 });
                             } else {
-                                    if ($scope.iroColorValue===undefined)  $scope.iroColorValue = config.iroColorValue || {h: 360, s: 100, v: 100};
+                                    console.log("init",$scope.config.label,$scope);
+                                    if ($scope.iroColorValue===undefined)  {
+                                        $scope.iroColorValue = config.iroColorValue || {r: 255, g: 0, b: 0};
+                                        $scope.initColor = config.iroColorValue;
+                                    } else {
+                                        if ($scope.initColor !== config.iroColorValue) {
+                                            $scope.iroColorValue = config.iroColorValue;
+                                            $scope.initColor = config.iroColorValue;
+                                        }
+                                    }
                                     $scope.opts=[{
                                         width: config.iroWidth * config.horizontalScale, // config.widgetWidthPx,
                                         handleRadius : 8 * config.horizontalScale,

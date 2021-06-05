@@ -1,0 +1,84 @@
+{
+    "iro-color" : {
+        "label" : {
+            "general": "Allgemein",
+            "components": "Komponenten",
+            "group" : "Gruppe",
+            "size" : "Größe",
+            "tabGeneral" : "Allgemein",
+            "tabComponents" : "Komponenten",
+            "label" : "Bezeichnung",
+            "indent" : "Breite",
+            "placement" : "Platzierung",
+            "align" : "Ausrichtung",
+            "initialColor" : "Startfarbe",
+            "type" : "Typ",
+            "ofGroup": "% der Gruppe",
+            "button": "Schaltfäche",
+            "color": "Farbe",
+            "picked": "ausgewählt",
+            "alpha": "Alpha",
+            "passThru" : "Wenn msg eintrifft an den Ausgang weiterleiten: ",
+            "send": "Sende",
+            "whenConfirmed": "wenn bestätigt",
+            "payload": "Nutzdaten",
+            "topic": "Thema",
+            "name": "Name",
+            "stacking": "Schichtung",
+            "options": "Optionen",
+            "component": "Komponente",
+            "border": "Rand",
+            "width": "Breite",
+            "lightness": "Helligkeit",
+            "startingAngle": "Anfangswinkel",
+            "direction": "Richtung",
+            "sliderShows": "Regler zeigt",
+            "min": "Min",
+            "max": "Max"
+        },
+        "dropdown" : {
+            "placement" : ["links","oben"],
+            "hAlign": ["links", "mitte", "rechts"],
+            "vAlign": ["oben", "mitte", "unten"],
+            "type": ["als Steuerelement", "popup Mitte Schalter", "popup Mitte Gruppe", "popup Mitte Fenster"],
+            "dynOutput": ["nach Auswahl","bei Interaktion"],
+            "outFormat": [
+                "hex Text '#ffffff'",
+                "hex Text with alpha '#ffffffff'",
+                "RGB Text 'rgb(255,255,255)'",
+                "RGBA Text mit Alpha 'rgba(255,255,255,1)'",
+                "HSL Text 'hsl(360,100%,100%)'",
+                "HSLA Text 'hsla(360,100%,100%,1)'",
+                "RGB Objekt {r:255,g:255,b:255 }",
+                "RGBA Objekt {r:255,g:255,b:255,a:1}",
+                "HSL Objekt {h:360,s:100,l:100}",
+                "HSLA Objekt {h:360,s:100,l:100,a:1}",
+                "HSV Objekt {h:360,s:100,v:100}",
+                "HSVA Objekt {h:360,s:100,v:100,a:1}",
+                "Rot 0..255",
+                "Grün 0..255",
+                "Blau 0..255",
+                "Alpha 0..1",
+                "Farbton 0..360",
+                "Sättigung 0..100",
+                "Helligkeit 0..100",
+                "Temperatur 1000..40000",
+                "abstimmbares Wieß {v:100,t:40000}"],
+            "layoutDirection": ["horizontal","vertical"]
+        },
+        "componentDropdown": {
+            "component":["Farbkreis (Farbton/Sättigung)","Farbfeld (Sättigung/Sättigung)","Schieberegler"],
+            "lightness":["verblassen","konstant"],
+            "direction":["gegen den Uhrzeigersin","im Uhrzeigersinn"],
+            "slider":["Farbton","Sättigung","Helligkeit","Rot","Grün","Blau","Alpha","Farbtemperatur"]
+        },
+        "notes": {
+            "tuneable":"Für abstimmbares Weiß bitte einen Leuchtkatft und Farbtemeratur Schieberegler hinzufügen. Als Eingabe nur 'msg.value', 'msg.kelvin' oder '{v:100,t:40000}' verwenden."
+        },
+        "error": {
+            "no-group": "Gruppe nicht konfiguriert",
+            "indentToGreat": "Breite der Bezeichnung darf nicht größer sein als das Steuerelement oder die Gruppe !",
+            "buttonToGreat": "Schaltfläche darf nichtt breiter sein als die Gruppe oder das Steuerelement minus die Bezeichnung!"
+        }
+    }
+}

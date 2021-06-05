@@ -1,0 +1,136 @@
+<script type="text/html" data-help-name="ui_iro-color-picker">
+    <p>Node-RED dashboard ui node um verschiedene Farbfelder und -Regler darzustellen.</p>
+    <p></p>
+    <p>Diese Node basiert auf <a href="https://iro.js.org/">iro.js</a> <i>Modular, design-conscious color picker widget for JavaScript</i></p>
+    <p></p>
+    <p>bitte beachten Sie auch die informationen unter <a href="https://flows.nodered.org/node/node-red-contrib-ui-iro-color-picker">flows.nodered.org</a></p>
+
+    <h3>Eingaben</h3>
+    <dl class="message-properties">
+        <dt>payload<span class="property-type">Text | number| Objekt</span></dt>
+        <dd>Die gleichen Formate wie für die Ausgabe werden auch für die EIngabe unterstützt.
+            Wenn eine Zahl zum Eingang gesendet wird dann wird angenommen, dass diese das gleiche Format hat wie für die Ausgabe definiert.</dd>
+    </dl>
+
+    <h3>Ausgaben</h3>
+    <dl class="message-properties">
+        <dt>payload<span class="property-type">Text | number| Objekt<</span></dt>
+        <dd>Die ausgewählte Farbe in gewünschtem Format.</dd>
+        <dt>topic<span class="property-type">Text | msg | flow | global</span></dt>
+        <dd>Ein Thema um die Nachricht zu identifizieren. Kann als konstanten Text, über eine Nachricht am Eingang oder einen Kontext Wert inm flow oder global Speicher.</dd>
+    </dl>
+
+    <h2>Konfiguration</h2>
+    <p>Die Konfiguration is auf zwei Reiter aufgeteilt</p>
+    <h3>Allgmein</h3>
+    <h4>Bezeichnung</h4>
+    <p>Eine Bezeichnung kann dem Steuerelement hinzugefügt werden</p>
+    <ul>
+        <li>Die <b>Breite</b> (in Rastereinheiten) bestimmt die Breite der Bezeichnung und ermöglicht die Ausrichtung der Steuerfelder</li>
+        <li>Die Bezeichnung kann entweder <i>links</i> oder <i>über</i> dem Schaltfeld <b>plaziert</b> werden</li>
+        <li>Die Bezeichnung kann horizontal oder vertikal ausgerichtet werden</li>
+    </ul>
+    <h4>Startfarbe</h4>
+    <p>Diese Farbe wird verwendet bis eine gültige Farbe am EIngang eintrifft.</p>
+    <p><b>Es ist sicherzustellen, dass die Startfarbe auch von den gewählten Komponenten dargestellt werden kann. So kann z.B ein Farbtonregler alleine keine Grautöne oder Schwarz / Weiß darstellen </b></p>
+    <h4>Typ</h4>
+    <p>Das Farbwahlfeld kann in zwei verschiedene Arten dargestellt werden:</p>
+    <ul>
+        <li><b>als widget</b> auf dem dashboard</li>
+        <li><b>als popup</b> über eine Schaltfläche ausgelöstes Fenster. Das Fenster kann entweder zenriert auf der Schaltfläche, der Gruppe oder dem Fenster erscheinen.</li>
+        <ul>
+            <li><b>Breite</b> bestimmt die Breite des Fensters relativ zu der Gruppenbreite</li>
+            <li><b>Schaltfläche</b> bestimmt die Breite der Schaltfläche in Rastereinheiten</li>
+            <li><b>Farbe</b> bestimmt die Farbe des Hintergrundes</li>
+            <li>wenn <b>ausgewählt</b> selektiert ist folgt die Hintergrundfarbe der ausgewählten Farbe</li>
+            <li><b>alpha</b> 100% = opaque und 0% der Hintergrund ist transparent</li>
+        </ul>
+    </ul>
+    <h4>Ausgabe Nachrichten</h4>
+    <ul>
+        <li>einkommende Nachrichten können direkt an den Ausgang weitergegeben werden</li>
+        <li>Nachrichten können entweder gesendet werden nachdem eine Farbe <i>ausgewählt</i> wurde  oder bei jeder <i>Interaktion</i><br>Um die Anzahl der Nachrichten zu begrenzen können:</li>
+        <ul>
+            <li>neue Nachrichten erst gesendet werden wenn die letzte vom backend <b>bestätigt<b> wurde. Eine Mindestfrequenz kann angegeben werden</li>
+            <li>neue nachrichten werden mit einer maximalen Frequenz gesendet</li>
+        </ul>
+        <li>Die Nachrichten kann in einem der unten angegebenen Formate gesendet werden.</li>
+        <li>Ein Thema kann der Nachricht beigefügt werden</li>
+    </ul>
+
+    <h3>Komponenten EInstellungen</h3>
+    <p>iro.js bietet verschiedene Kompontnten an. Diese können kombiniert und sortiert werden</p>
+    <p><b>ACHTUNG: Sollte die gewählten Komponenten nicht den gesamten Farbraum abdecken so ist eine passende Startfarbe zu wählen!</b></p>
+    <ul>
+        <li><b>Schichtung</b> Die Komponenten können entweder verikal geschichtet werden (übereinander) oder horizontal (nebeneinander)</li>
+        <li><b>Komponenten</b> Eine Liste der gewählten Komponenten.</li>
+    </ul>
+    <ul>
+        <li>Jede Komponente hat die folgenden Optionen</li>
+        <ul>
+            <li><b>Rand</b> Frabe</li>
+            <li><b>Breite</b> der Randes in pixel. 0 = kein Rand</li>
+        </ul>
+        <li><i>Farbkreis<i>: Klassischer Farbkreis der Farbton und Sättigung darstellt. (sollte mit einem Helligkeitsregler kombiniert werden)</li>
+        <ul>
+            <li><i>Helligkeit</i><b>Verblassen</b> um die Helligkeit des Kreises an die Farbhelligkeit anzupassen <b>Konstant</b> um den Farbkreis immer in voller Helligkeit darzustellen</li>
+            <li><i>Anfangswinkel</i>des 0° Farbton (Rot)</li>
+            <li><i>Richtung</i> des Farbkreises</li>
+        </ul>
+        <li><i>Farbfeld<i>: Farbfeld zeigt die Helligkeit und Sättigung der Farbe. (Sollte mit einem Farbton Regler kombiniert werden)</li>
+        <ul>
+            <li>Die Höhe des Farbfeldes in Pixel. 0 entspricht einen Quadrat</li>
+        </ul>
+        <li> <i>Regler</i> Verscheidene Regler stehen zur Verfügung</li>
+        <ul>
+            <li><i>Farbton<i></li>
+            <li><i>Sättigung<i></li>
+            <li><i>Helligkeit</i></li>
+            <li><i>Rot<i></li>
+            <li><i>Grün<i></li>
+            <li><i>Blau<i></li>
+            <li><i>Alpha</i>(Transparenz)</li>
+            <li><i>Farbtemperatur</i>in ° Kelvin</li>
+            <ul>
+                <li>Mindestwert (>2.000°K)</li>
+                <li>Maximalwert (<40.000°K)</li>
+            </ul>
+        </ul>
+    </ul>
+
+    <h3>Unterstütze Formate</h3>
+    <p>gesendet oder empfangen als <code>msg.payload</code></p>
+    <ul>
+        <li>Hex Text: "#ff0000"</li>
+        <li>Hex alpha Text: "#ff0000ff"</li>
+        <li>kurzer Hex Text: "#f00"</li>
+        <li>kurzer Hex Alpha Text: "#f00f"</li>
+        <li>RGB Text: "rgb(255, 0, 0)"</li>
+        <li>RGBA Text: "rgba(255, 0, 0, 1)"</li>
+        <li>RGB Text in Prozent: "rgb(100%, 0%, 0%)"</li>
+        <li>RGBA Text in Prozent: "rgba(100%, 0%, 0%, 100%)"</li>
+        <li>RGB Objekt: <code>{r: 255, g: 0, b: 0}</code></li>
+        <li>RGBA Objekt: <code>{r: 255, g: 0, b: 0, a: 1}</code></li>
+        <li>HSL Text: "hsl(360, 50%, 100%)"</li>
+        <li>HSLA Text: "hsla(360, 50%, 100%, 1)"</li>
+        <li>HSL Objekt: <code>{h: 360, s: 50, l: 100}</code></li>
+        <li>HSLA Objekt: <code>{h: 360, s: 50, l: 100, a: 1}</code></li>
+        <li>HSV Objekt: <code>{h: 360, s: 100, v: 50}</code></li>
+        <li>HSVA Objekt: <code>{h: 360, s: 100, v: 50, a: 1}</code></li>
+        <li>Einstellbarer Weißpunkt <code>{v:100,t:6000}</code></li>
+        <li>Zahlenwert in Übereinstimmung mit dem Ausgabeformat</li>
+    </ul>
+    <p>Zusätzlich können folgende Nachrichten <b>empfangen</b> werden um einzelne Parameter einzustellen</p>
+    <ul>
+        <li><code>msg.hue</code>0 - 360</li>
+        <li><code>msg.value</code>0 - 100</li>
+        <li><code>msg.saturation</code>0 - 100</li>
+        <li><code>msg.red</code>0 - 255</li>
+        <li><code>msg.yellow</code>0 - 255</li>
+        <li><code>msg.blue</code>0 - 255</li>
+        <li><code>msg.alpha</code>0 - 1</li>
+        <li><code>msg.kelvin</code>2.000 - 40.0000</li>
+    </ul>
+</p>
+ 
+</script>

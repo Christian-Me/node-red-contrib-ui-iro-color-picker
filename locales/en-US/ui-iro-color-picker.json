@@ -1,0 +1,84 @@
+{
+    "iro-color" : {
+        "label" : {
+            "general": "General",
+            "components": "Components",
+            "group" : "Group",
+            "size" : "Size",
+            "tabGeneral" : "General",
+            "tabComponents" : "Components",
+            "label" : "Label",
+            "indent" : "Indent",
+            "placement" : "Placement",
+            "align" : "Align",
+            "initialColor" : "Initial Color",
+            "type" : "Type",
+            "ofGroup": "% of group",
+            "button": "Button",
+            "color": "Color",
+            "picked": "picked",
+            "alpha": "Alpha",
+            "passThru" : "If msg arrives on input, pass through to output: ",
+            "send": "Send",
+            "whenConfirmed": "when confirmed",
+            "payload": "Payload",
+            "topic": "Topic",
+            "name": "Name",
+            "stacking": "Stacking",
+            "options": "Options",
+            "component": "Component",
+            "border": "Border",
+            "width": "Width",
+            "lightness": "Lightness",
+            "startingAngle": "Starting Angle",
+            "direction": "direction",
+            "sliderShows": "Slider shows",
+            "min": "Min",
+            "max": "Max"
+        },
+        "dropdown" : {
+            "placement" : ["left","above"],
+            "hAlign": ["left", "center", "right"],
+            "vAlign": ["top", "middle", "bottom"],
+            "type": ["as widget", "popup center button", "popup center group", "popup center window"],
+            "dynOutput": ["when released","on user interaction"],
+            "outFormat": [
+                "hex string '#ffffff'",
+                "hex string with alpha '#ffffffff'",
+                "RGB string 'rgb(255,255,255)'",
+                "RGBA string with alpha 'rgba(255,255,255,1)'",
+                "HSL string 'hsl(360,100%,100%)'",
+                "HSLA string 'hsla(360,100%,100%,1)'",
+                "RGB object {r:255,g:255,b:255 }",
+                "RGBA object {r:255,g:255,b:255,a:1}",
+                "HSL object {h:360,s:100,l:100}",
+                "HSLA object {h:360,s:100,l:100,a:1}",
+                "HSV object {h:360,s:100,v:100}",
+                "HSVA object {h:360,s:100,v:100,a:1}",
+                "red 0..255",
+                "green 0..255",
+                "blue 0..255",
+                "alpha 0..1",
+                "hue 0..360",
+                "saturation 0..100",
+                "value 0..100",
+                "kelvin 1000..40000",
+                "tuneable white {v:100,t:40000}"],
+            "layoutDirection": ["horizontal","vertical"]
+        },
+        "componentDropdown": {
+            "component":["picker (hue/saturation)","box (saturation/value)","slider"],
+            "lightness":["fade","constant"],
+            "direction":["anti clockwise","clockwise"],
+            "slider":["hue","saturation","value","red","green","blue","alpha","color temperature"]
+        },
+        "notes": {
+            "tuneable":"For tuneable white output please add a value and temperature slider component! Use only value, kelvin or tuneable white as input format."
+        },
+        "error": {
+            "no-group": "group not configured",
+            "indentToGreat": "Indent value can not be greater than the group or widget width!",
+            "buttonToGreat": "Button size can not be greater than the group or widget width minus indent!"
+        }
+    }
+}

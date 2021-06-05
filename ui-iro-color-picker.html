@@ -228,8 +228,8 @@
 //********************************************************************************* BEGIN USER DEFINED DEFAULT VALUES
             label: {value:''},
             placement: {value: 'left'},
-            hAlign: {value: 'left'},
-            vAlign: {value: 'top'},
+            hAlign: {value: 'flex-start'},
+            vAlign: {value: 'flex-start'},
             stateField: {value: 'payload'},
             enableField: {value: 'enable'},            
             layoutDirection: {value:'vertical'},
@@ -337,6 +337,7 @@
 //
         oneditprepare: function() {
             var node = this;
+
             $("#node-input-size").elementSizer({
                 width: "#node-input-width",
                 height: "#node-input-height",
@@ -354,12 +355,12 @@
             node.tabs.addTab({
                 id: "iro-tab-general",
                 node: this,
-                label: this._("General")
+                label: this._("iro-color.label.general")
             });
             node.tabs.addTab({
                 id: "iro-tab-config",
                 node: this,
-                label: this._("Components")
+                label: this._("iro-color.label.components")
             });
             $('#node-input-option-container')
                 .css('min-height','250px').css('min-width','400px')
@@ -370,19 +371,19 @@
                     addItem: function(row, index, data) {
                         iroOptionsState[index]={};
                         if (!data.hasOwnProperty('options')) data.options={};
-                        $('<div><span>Component</span></div>').css('display','inline-block').css('width','80px').appendTo(row);
+                        $(`<div><span>${node._("iro-color.label.component")}</span></div>`).css('display','inline-block').css('width','80px').appendTo(row);
                         var component = $('<select/>', {
                             class: 'node-input-option-component',
                             style: "margin-left:5px; width:70%"
                         }).appendTo(row);
-                        component.append($('<option></option>').val('picker').text('picker (hue/saturation)'));
-                        component.append($('<option></option>').val('box').text('box (saturation/value) '));
-                        component.append($('<option></option>').val('slider').text('slider'));
+                        component.append($('<option></option>').val('picker').text(node._("iro-color.componentDropdown.component.0")));
+                        component.append($('<option></option>').val('box').text(node._("iro-color.componentDropdown.component.1")));
+                        component.append($('<option></option>').val('slider').text(node._("iro-color.componentDropdown.component.2")));
                         if (data.componentId) {
                             component.val(data.componentId);
                         }
                         $('<br>').appendTo(row);
-                        $('<div><span>Border</span></div>').css('display','inline-block').css('width','80px').appendTo(row);
+                        $(`<div><span>${node._("iro-color.label.border")}</span></div>`).css('display','inline-block').css('width','80px').appendTo(row);
                         var borderColor = $('<input/>', {
                             class: 'node-input-option-borderColor',
                             type: 'color',
@@ -394,7 +395,7 @@
                         if (data.options.borderColor) {
                             borderColor.val(data.options.borderColor);
                         }
-                        $('<div><span>Width</span></div>').css('display','inline-block').css('margin-left','5px').css('width','40px').appendTo(row);
+                        $(`<div><span>${node._("iro-color.label.width")}</span></div>`).css('display','inline-block').css('margin-left','5px').css('width','40px').appendTo(row);
                         var borderWidth = $('<input/>', {
                             class: 'node-input-option-borderWidth',
                             type: 'number',
@@ -414,18 +415,18 @@
                         $('<br>')                        
                             .addClass('node-label-option-picker')
                             .appendTo(row);
-                        $('<div><span>lightness</span></div>')
+                        $(`<div><span>${node._("iro-color.label.lightness")}</span></div>`)
                             .addClass('node-label-option-picker')
                             .css('display','inline-block')
-                            .css('width','25%')
+                            .css('width','35%')
                             .css('text-align','right')
                             .appendTo(row);
                         var wheelLightness = $('<select/>', {
                             class: 'node-input-option-wheelLightness',
-                            style: "margin-left:5px; width:40%"
+                            style: "margin-left:5px; width:50%"
                         }).appendTo(row);
-                        wheelLightness.append($('<option></option>').val('true').text('fade'));
-                        wheelLightness.append($('<option></option>').val('false').text('constant'));
+                        wheelLightness.append($('<option></option>').val('true').text(node._("iro-color.componentDropdown.lightness.0")));
+                        wheelLightness.append($('<option></option>').val('false').text(node._("iro-color.componentDropdown.lightness.1")));
                         if (data.options.wheelLightness!==undefined) {
                             wheelLightness.val((data.options.wheelLightness) ? 'true' : 'false');
                         }
@@ -434,10 +435,10 @@
                         $('<br>')                        
                             .addClass('node-label-option-picker')
                             .appendTo(row);
-                        $('<div><span>starting angle</span></div>')
+                        $(`<div><span>${node._("iro-color.label.startingAngle")}</span></div>`)
                             .addClass('node-label-option-picker')
                             .css('display','inline-block')
-                            .css('width','25%')
+                            .css('width','35%')
                             .css('text-align','right')
                             .appendTo(row);
                         var wheelAngle = $('<input/>', {
@@ -460,18 +461,18 @@
                         $('<br>')                        
                             .addClass('node-label-option-picker')
                             .appendTo(row);
-                        $('<div><span>direction</span></div>')
+                        $(`<div><span>${node._("iro-color.label.direction")}</span></div>`)
                             .addClass('node-label-option-picker')
                             .css('display','inline-block')
-                            .css('width','25%')
+                            .css('width','35%')
                             .css('text-align','right')
                             .appendTo(row);
                         var wheelDirection = $('<select/>', {
                             class: 'node-input-option-wheelDirection',
-                            style: "margin-left:5px; width:40%"
+                            style: "margin-left:5px; width:50%"
                         }).appendTo(row);
-                        wheelDirection.append($('<option></option>').val('anticlockwise').text('anti clockwise'));
-                        wheelDirection.append($('<option></option>').val('clockwise').text('clockwise'));
+                        wheelDirection.append($('<option></option>').val('anticlockwise').text(node._("iro-color.componentDropdown.direction.0")));
+                        wheelDirection.append($('<option></option>').val('clockwise').text(node._("iro-color.componentDropdown.direction.1")));
                         if (data.options.wheelDirection) {
                             wheelDirection.val(data.options.wheelDirection);
                         }
@@ -480,7 +481,7 @@
                         $('<br>')                        
                             .addClass('node-label-option-box')
                             .appendTo(row);
-                        $('<div><span>box height</span></div>')
+                        $(`<div><span>${node._("iro-color.label.boxHeight")}</span></div>`)
                             .addClass('node-label-option-box')
                             .css('display','inline-block')
                             .css('width','25%')
@@ -506,7 +507,7 @@
                         $('<br>')
                             .addClass('node-label-option-type')
                             .appendTo(row);
-                        $('<div><span>Slider shows</span></div>')
+                        $(`<div><span>${node._("iro-color.label.sliderShows")}</span></div>`)
                             .addClass('node-label-option-type')
                             .css('display','inline-block')
                             .css('width','80px')
@@ -515,14 +516,14 @@
                             class: 'node-input-option-type',
                             style: "margin-left:5px; width:70%;"
                         }).appendTo(row);
-                        type.append($('<option></option>').val('hue').text('hue'));
-                        type.append($('<option></option>').val('saturation').text('saturation'));
-                        type.append($('<option></option>').val('value').text('value'));
-                        type.append($('<option></option>').val('red').text('red'));
-                        type.append($('<option></option>').val('green').text('green'));
-                        type.append($('<option></option>').val('blue').text('blue'));
-                        type.append($('<option></option>').val('alpha').text('alpha'));
-                        type.append($('<option></option>').val('kelvin').text('color temperature'));
+                        type.append($('<option></option>').val('hue').text(node._("iro-color.componentDropdown.slider.0")));
+                        type.append($('<option></option>').val('saturation').text(node._("iro-color.componentDropdown.slider.1")));
+                        type.append($('<option></option>').val('value').text(node._("iro-color.componentDropdown.slider.2")));
+                        type.append($('<option></option>').val('red').text(node._("iro-color.componentDropdown.slider.3")));
+                        type.append($('<option></option>').val('green').text(node._("iro-color.componentDropdown.slider.4")));
+                        type.append($('<option></option>').val('blue').text(node._("iro-color.componentDropdown.slider.5")));
+                        type.append($('<option></option>').val('alpha').text(node._("iro-color.componentDropdown.slider.6")));
+                        type.append($('<option></option>').val('kelvin').text(node._("iro-color.componentDropdown.slider.7")));
                         if (data.options.sliderType) {
                             type.val(data.options.sliderType);
                         }
@@ -531,7 +532,7 @@
                         $('<br>')                        
                             .addClass('node-label-option-minmax')
                             .appendTo(row);
-                        $('<div><span>min</span></div>')
+                        $(`<div><span>${node._("iro-color.label.min")}</span></div>`)
                             .addClass('node-label-option-minmax')
                             .css('display','inline-block')
                             .css('width','25%')
@@ -550,7 +551,7 @@
                         $('<br>')
                             .addClass('node-label-option-minmax')
                             .appendTo(row);
-                        $('<div><span>max</span></div>')
+                        $(`<div><span>${node._("iro-color.label.max")}</span></div>`)
                             .addClass('node-label-option-minmax')
                             .css('display','inline-block')
                             .css('width','25%')
@@ -695,7 +696,7 @@
     ** There is no need to edit these lines.
     *******************************************************************************-->
     <div class="form-row" id="template-row-group">
-        <label for="node-input-group"><i class="fa fa-table"></i> Group</span></label>
+        <label for="node-input-group"><i class="fa fa-table"></i> <span data-i18n='iro-color.label.group'></span></label>
         <input type="text" id="node-input-group">
     </div>
     <!--***************************************************************************-->
@@ -711,7 +712,7 @@
     *******************************************************************************-->
 
     <div class="form-row" id="template-row-size">
-        <label><i class="fa fa-object-group"></i> Size</span></label>
+        <label><i class="fa fa-object-group"></i> <span data-i18n='iro-color.label.size'></span></label>
         <input type="hidden" id="node-input-width">
         <input type="hidden" id="node-input-height">
         <button class="editor-button" id="node-input-size"></button>
@@ -752,81 +753,81 @@
     <div id="node-iro-config-tabs-content" style="min-height: 170px;">
         <div id="iro-tab-general" style="display:none">
             <div class="form-row">
-                <label for="node-input-label"><i class="fa fa-i-cursor"></i> Label</span></label>
+                <label for="node-input-label"><i class="fa fa-i-cursor"></i> <span data-i18n='iro-color.label.label'></span></label>
                 <input type="text" style="width: 40%;" id="node-input-label"/>
-                <label for="node-input-widgetIndent" style="width: 15%;"><i class="fa fa-indent"></i> Indent</span></label>
+                <label for="node-input-widgetIndent" style="width: 20%;"><i class="fa fa-indent"></i> <span data-i18n='iro-color.label.indent'></span></label>
                 <input type="hidden" id="node-input-widgetIndent">
                 <button class="editor-button" id="node-input-sizeWidgetIndent"></button>
             </div>
             <div class="form-row" id="node-options-label-options" style="display:none">
-                <label for="node-input-placement"><i class="fa fa-exchange"></i> Placement</label>
+                <label for="node-input-placement"><i class="fa fa-exchange"></i> <span data-i18n='iro-color.label.placement'></span></label>
                 <select id="node-input-placement" style="width: 17%;">
-                    <option value="left">left</option>
-                    <option value="above">above</option>
+                    <option value="left" data-i18n='iro-color.dropdown.placement.0'></option>
+                    <option value="above" data-i18n='iro-color.dropdown.placement.1'></option>
                 </select>
-                <label for="node-input-hAlign" style="width: 15%;">&nbsp;<i class="fa fa-th"></i> Align</label>
-                <select id="node-input-hAlign" style="width: 17%;">
-                    <option value="flex-start">left</option>
-                    <option value="center">center</option>
-                    <option value="flex-end">right</option>
+                <label for="node-input-hAlign" style="width: 25%;">&nbsp;<i class="fa fa-th"></i> <span data-i18n='iro-color.label.align'></span></label>
+                <select id="node-input-hAlign" style="width: 16%;">
+                    <option value="flex-start" data-i18n='iro-color.dropdown.hAlign.0'></option>
+                    <option value="center" data-i18n='iro-color.dropdown.hAlign.1'></option>
+                    <option value="flex-end" data-i18n='iro-color.dropdown.hAlign.2'></option>
                 </select>
-                <select id="node-input-vAlign" style="width: 17%;">
-                    <option value="flex-start">top</option>
-                    <option value="center">middle</option>
-                    <option value="flex-end">bottom</option>
+                <select id="node-input-vAlign" style="width: 16%;">
+                    <option value="flex-start" data-i18n='iro-color.dropdown.vAlign.0'></option>
+                    <option value="center" data-i18n='iro-color.dropdown.vAlign.1'></option>
+                    <option value="flex-end" data-i18n='iro-color.dropdown.vAlign.2'></option>
                 </select>
             </div>
             <hr>
             <div class="form-row">
-                <label for="node-input-iroColorValue"><i class="fa fa-circle-o-notch "></i>&nbsp;Initial Color</label>
+                <label for="node-input-iroColorValue"><i class="fa fa-circle-o-notch "></i>&nbsp;<span data-i18n='iro-color.label.initialColor'></span></label>
                 <input id="node-input-iroColorValue" type="color" style="width: 15%;"/>
             </div>
             <hr>
             <div class="form-row">
-                <label for="node-input-pickerType"><i class="fa fa-tachometer"></i> Type</label>
+                <label for="node-input-pickerType"><i class="fa fa-tachometer"></i> <span data-i18n='iro-color.label.type'></span></label>
                 <select id="node-input-pickerType">
-                    <option value="widget">as widget</option>
-                    <option value="popupCC">popup center button</option>
-                    <option value="popupCG">popup center group</option>
-                    <option value="popupCW">popup center window</option>
+                    <option value="widget" data-i18n='iro-color.dropdown.type.0'></option>
+                    <option value="popupCC" data-i18n='iro-color.dropdown.type.1'></option>
+                    <option value="popupCG" data-i18n='iro-color.dropdown.type.2'></option>
+                    <option value="popupCW" data-i18n='iro-color.dropdown.type.3'></option>
                 </select>
             </div>
             <div id="node-options-picker" style="display:none">
                 <div class="form-row">
-                    <label for="node-input-pickerSize" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-arrows-h"></i> Width</label>
+                    <label for="node-input-pickerSize" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-arrows-h"></i> <span data-i18n='iro-color.label.width'></span></label>
                     <input id="node-input-pickerSize" type="number" min=10 max=500 step=10 style="width: 15%;"/>
-                    <label for="node-input-pickerSize" style="width: 25%;"> % of group</label>
-                    <label for="node-input-buttonWidth" style="width: 15%;"><i class="fa fa-mouse-pointer"></i> Button</label>
+                    <label for="node-input-pickerSize" style="width: 25%;"> <span data-i18n='iro-color.label.ofGroup'></label>
+                    <label for="node-input-buttonWidth" style="width: 20%;"><i class="fa fa-mouse-pointer"></i> <span data-i18n='iro-color.label.button'></span></label>
                     <input type="hidden" id="node-input-buttonWidth"/>
                     <button class="editor-button" id="node-input-sizeButtonWidth"></button>
                 </div>
                 <div class="form-row">
-                    <label for="node-input-backgroundColor" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-circle-o-notch "></i>&nbsp;Color</label>
+                    <label for="node-input-backgroundColor" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-circle-o-notch "></i>&nbsp;<span data-i18n='iro-color.label.color'></span></label>
                     <input id="node-input-backgroundColor" type="color" style="width: 15%;"/>
                     <input type="checkbox" checked id="node-input-backgroundVariable" style="display:inline-block; width:auto; vertical-align:middle;">
-                    <label for="node-input-backgroundVariable" style="width: 20%;">&nbsp;picked</label>
-                    <label for="node-input-backgroundDim" style="width: 12%;">&nbsp;Alpha</label>
+                    <label for="node-input-backgroundVariable" style="width: 20%;">&nbsp;<span data-i18n='iro-color.label.picked'></span></label>
+                    <label for="node-input-backgroundDim" style="width: 12%;">&nbsp;<span data-i18n='iro-color.label.alpha'></span></label>
                     <input id="node-input-backgroundDim" type="number" min=0 max=100 step=1 style="width: 10%;"/>
                     <label for="node-input-backgroundDim" style="width: 5%;">&nbsp;%</label>
                 </div>
             </div>
             <hr>
             <div class="form-row">
-                <label style="width:auto" for="node-input-passthru"><i class="fa fa-arrow-right"></i> If <code>msg</code> arrives on input, pass through to output: </label>
+                <label style="width:auto" for="node-input-passthru"><i class="fa fa-arrow-right"></i> <span data-i18n='iro-color.label.passThru'></span></label>
                 <input type="checkbox" checked id="node-input-passthru" style="display:inline-block; width:auto; vertical-align:top;">
             </div>
             <div class="form-row">
-                <label for="node-input-dynOutput"><i class="fa fa-envelope-o"></i> Send</label>
+                <label for="node-input-dynOutput"><i class="fa fa-envelope-o"></i> <span data-i18n='iro-color.label.send'></label>
                 <select id="node-input-dynOutput" style="width:60%">
-                    <option value="input:end">when released</option>
-                    <option value="input:move">on user interaction</option>
+                    <option value="input:end" data-i18n='iro-color.dropdown.dynOutput.0'></option>
+                    <option value="input:move" data-i18n='iro-color.dropdown.dynOutput.1'></option>
                 </select>
             </div>
             <div id="node-options-dynOutput" style="display:none">
                 <div class="form-row">
-                    <label for="node-input-outputConfirmed" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-play"></i> send</label>
+                    <label for="node-input-outputConfirmed" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-play"></i> <span data-i18n='iro-color.label.send'></span></label>
                     <input type="checkbox" checked id="node-input-outputConfirmed" style="display:inline-block; width:auto; vertical-align:middle;">
-                    <label style="width:auto" for="node-input-outputConfirmed">&nbsp;when confirmed</label>
+                    <label style="width:auto" for="node-input-outputConfirmed">&nbsp;<span data-i18n='iro-color.label.whenConfirmed'></span></label>
                         <label for="node-input-outputLimit" id="node-options-dynOutputMin" style="width: 15%; text-align: right; display:none;"><i class="fa fa-step-forward"></i>&nbsp;&nbsp;min</label>
                         <label for="node-input-outputLimit" id="node-options-dynOutputMax" style="width: 15%; text-align: right; display:none;"><i class="fa fa-step-forward"></i>&nbsp;&nbsp;max</label>
                     <input id="node-input-outputLimit" type="number" min=0 max=100 step=1 style="width: 10%;"/>
@@ -834,79 +835,59 @@
                 </div>
             </div>
             <div class="form-row">
-                <label for="node-input-outFormat" style="padding-left: 25px; margin-right: -25px">Payload</label>
+                <label for="node-input-outFormat" style="padding-left: 25px; margin-right: -25px"><span data-i18n='iro-color.label.payload'></span></label>
                 <select id="node-input-outFormat" style="width:60%">
-                    <option value="hexString">hex string "#ffffff"</option>
-                    <option value="hex8String">hex string with alpha "#ffffffff"</option>
-                    <option value="rgbString">RGB string "rgb(255,255,255)"</option>
-                    <option value="rgbaString">RGBA string with alpha "rgb(255,255,255,1)"</option>
-                    <option value="hslString">HSL string "hsl(360,100%,100%)"</option>
-                    <option value="hslaString">HSLA string "hsla(360,100%,100%,1)"</option>
-                    <option value="rgb">RGB object {r:255,g:255,b:255 }</option>
-                    <option value="rgba">RGBA object {r:255,g:255,b:255,a:1}</option>
-                    <option value="hsl">HSL object {h:360,s:100,l:100}</option>
-                    <option value="hsla">HSLA object {h:360,s:100,l:100,a:1}</option>
-                    <option value="hsv">HSV object {h:360,s:100,v:100}</option>
-                    <option value="hsva">HSVA object {h:360,s:100,v:100,a:1}</option>
-                    <option value="red">red 0..255</option>
-                    <option value="green">green 0..255</option>
-                    <option value="blue">blue 0..255</option>
-                    <option value="alpha">alpha 0..1</option>
-                    <option value="hue">hue 0..360</option>
-                    <option value="saturation">saturation 0..100</option>
-                    <option value="value">value 0..100</option>
-                    <option value="kelvin">kelvin 1000..40000</option>
-                    <option value="tuneable">tuneable white {v:100,t:40000}</option>
+                    <option value="hexString" data-i18n='iro-color.dropdown.outFormat.0'></option>
+                    <option value="hex8String" data-i18n='iro-color.dropdown.outFormat.1'></option>
+                    <option value="rgbString" data-i18n='iro-color.dropdown.outFormat.2'></option>
+                    <option value="rgbaString" data-i18n='iro-color.dropdown.outFormat.3'></option>
+                    <option value="hslString" data-i18n='iro-color.dropdown.outFormat.4'></option>
+                    <option value="hslaString" data-i18n='iro-color.dropdown.outFormat.5'></option>
+                    <option value="rgb" data-i18n='iro-color.dropdown.outFormat.6'></option>
+                    <option value="rgba" data-i18n='iro-color.dropdown.outFormat.7'></option>
+                    <option value="hsl" data-i18n='iro-color.dropdown.outFormat.8'></option>
+                    <option value="hsla" data-i18n='iro-color.dropdown.outFormat.9'></option>
+                    <option value="hsv" data-i18n='iro-color.dropdown.outFormat.10'></option>
+                    <option value="hsva" data-i18n='iro-color.dropdown.outFormat.11'></option>
+                    <option value="red" data-i18n='iro-color.dropdown.outFormat.12'></option>
+                    <option value="green" data-i18n='iro-color.dropdown.outFormat.13'></option>
+                    <option value="blue" data-i18n='iro-color.dropdown.outFormat.14'></option>
+                    <option value="alpha" data-i18n='iro-color.dropdown.outFormat.15'></option>
+                    <option value="hue" data-i18n='iro-color.dropdown.outFormat.16'></option>
+                    <option value="saturation" data-i18n='iro-color.dropdown.outFormat.17'></option>
+                    <option value="value" data-i18n='iro-color.dropdown.outFormat.18'></option>
+                    <option value="kelvin" data-i18n='iro-color.dropdown.outFormat.19'></option>
+                    <option value="tuneable" data-i18n='iro-color.dropdown.outFormat.20'></option>
                 </select>
             </div>
             <div class="form-row">
-                <label for="node-input-topic" style="padding-left: 25px; margin-right: -25px">Topic</label>
+                <label for="node-input-topic" style="padding-left: 25px; margin-right: -25px"><span data-i18n='iro-color.label.topic'></span></label>
                 <input type="text" id="node-input-topic" placeholder="optional topic">
                 <input type="hidden" id="node-input-topicType">
             </div>
             </br>
             <div class="form-row">
-                <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+                <label for="node-input-name"><i class="icon-tag"></i> <span data-i18n='iro-color.label.name'></span></label>
                 <input type="text" id="node-input-name" placeholder="Name">
             </div>
             </br>
-            <div id="node-options-outFormat-note" class="form-tips" style="max-width: none; display:none; color:orangered">
-                <p>For tuneable white output please add a value and temperature slider component!</br>Use only value, kelvin or tuneable white as input format.</p>
+            <div id="node-options-outFormat-note" class="form-tips" style="max-width: 450px; display:none; color:orangered">
+                <p><span data-i18n='iro-color.notes.tuneable'></p>
             </div>
         </div>
         <div id="iro-tab-config" style="display:none">
             <div class="form-row">
-                <label for="node-input-layoutDirection"><i class="fa fa-repeat"></i> Stacking</label>
+                <label for="node-input-layoutDirection"><i class="fa fa-repeat"></i> <span data-i18n='iro-color.label.stacking'></span></label>
                 <select id="node-input-layoutDirection">
-                <option value="horizontal">horizontal</option>
-                <option value="vertical">vertical</option>
+                <option value="horizontal" data-i18n='iro-color.dropdown.layoutDirection.0'></option>
+                <option value="vertical" data-i18n='iro-color.dropdown.layoutDirection.1'></option>
                 </select>
             </div>
             <div class="form-row node-input-option-container-row">
-                <label for="node-input-option-container" style="vertical-align:top"><i class="fa fa-list-alt"></i> Options</label>
+                <label for="node-input-option-container" style="vertical-align:top"><i class="fa fa-list-alt"></i> <span data-i18n='iro-color.label.options'></span></label>
                 <ol id="node-input-option-container"></ol>
             </div>
         </div>
     </div>
 
-</script>
-<!--
-************************************************************************************
-** This next section is where you can write a little info on how your node operates.
-** This info will be available in the right side bar when the user clicks on the node,
-** and clicks on the info tab.
-** We ask that you always enter something here to help other users become familiar
-** with your node and know how to interface with it.
-** HTML code must be used.
-** The data-help-name must be the same name as you have registered this node with.
-**
-** It should be the same name that you are registering with Node-RED (see line #26).
-************************************************************************************
--->
-<script type="text/html" data-help-name="ui_iro-color-picker">
-    <p>A Node-RED dashboard ui node to display various types of color pickers and sliders.</p>
-    <p></p>
-    <p>This node is based on the <a href="https://iro.js.org/">iro.js</a> <i>Modular, design-conscious color picker widget for JavaScript</i></p>
-    <p></p>
-    <p>Please refer to the documentation on <a href="https://flows.nodered.org/node/node-red-contrib-ui-iro-color-picker">flows.nodered.org</a> for now</p>
 </script>
