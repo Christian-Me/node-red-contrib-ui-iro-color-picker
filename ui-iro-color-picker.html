@@ -256,6 +256,8 @@
                     return valid;
                 }},
             pickerType: {value: 'widget'},
+            popupWidth: {value: 0},
+            popupHeight: {value: 0},
             pickerSize: {value: '100'},
             backgroundDim: {value: '50'},
             backgroundColor: {value: '#000000'},
@@ -618,6 +620,10 @@
                 width: "#node-input-widgetIndent",
                 auto: true
             });
+            $("#node-input-sizePopup").elementSizer({
+                width: "#node-input-popupWidth",
+                auto: true
+            });
             $("#node-input-sizeButtonWidth").elementSizer({
                 width: "#node-input-buttonWidth",
                 auto: true
@@ -765,7 +771,7 @@
                     <option value="left" data-i18n='iro-color.dropdown.placement.0'></option>
                     <option value="above" data-i18n='iro-color.dropdown.placement.1'></option>
                 </select>
-                <label for="node-input-hAlign" style="width: 25%;">&nbsp;<i class="fa fa-th"></i> <span data-i18n='iro-color.label.align'></span></label>
+                <label for="node-input-hAlign" style="width: 23%;">&nbsp;<i class="fa fa-th"></i> <span data-i18n='iro-color.label.align'></span></label>
                 <select id="node-input-hAlign" style="width: 16%;">
                     <option value="flex-start" data-i18n='iro-color.dropdown.hAlign.0'></option>
                     <option value="center" data-i18n='iro-color.dropdown.hAlign.1'></option>
@@ -794,10 +800,17 @@
             </div>
             <div id="node-options-picker" style="display:none">
                 <div class="form-row">
-                    <label for="node-input-pickerSize" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-arrows-h"></i> <span data-i18n='iro-color.label.width'></span></label>
+                    <label for="node-input-sizePopup" style="padding-left: 25px; margin-right: -25px"><i class="fa fa-fa-object-group"></i> <span data-i18n='iro-color.label.popupSize'></span></label>
+                    <input type="hidden" id="node-input-popupWidth">
+                    <input type="hidden" id="node-input-popupHeight">
+                    
+                    <button class="editor-button" id="node-input-sizePopup"></button>
+
+                    <label for="node-input-pickerSize" style="padding-left: 10px; width:unset; padding-right: 10px;"><i class="fa fa-arrows-alt"></i> <span data-i18n='iro-color.label.width'></span></label>
                     <input id="node-input-pickerSize" type="number" min=10 max=500 step=10 style="width: 15%;"/>
-                    <label for="node-input-pickerSize" style="width: 25%;"> <span data-i18n='iro-color.label.ofGroup'></label>
-                    <label for="node-input-buttonWidth" style="width: 20%;"><i class="fa fa-mouse-pointer"></i> <span data-i18n='iro-color.label.button'></span></label>
+                    <label for="node-input-pickerSize" style="width: 5%;"> <span data-i18n='iro-color.label.ofGroup'></label>
+
+                    <label for="node-input-buttonWidth" style="width: 17%;"><i class="fa fa-mouse-pointer"></i> <span data-i18n='iro-color.label.button'></span></label>
                     <input type="hidden" id="node-input-buttonWidth"/>
                     <button class="editor-button" id="node-input-sizeButtonWidth"></button>
                 </div>
@@ -858,6 +871,7 @@
                     <option value="value" data-i18n='iro-color.dropdown.outFormat.18'></option>
                     <option value="kelvin" data-i18n='iro-color.dropdown.outFormat.19'></option>
                     <option value="tuneable" data-i18n='iro-color.dropdown.outFormat.20'></option>
+                    <option value="rgbw" data-i18n='iro-color.dropdown.outFormat.21'></option>
                 </select>
             </div>
             <div class="form-row">

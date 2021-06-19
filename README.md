@@ -5,7 +5,8 @@ Color picker node utilizing the [iro.js](https://iro.js.org) widget.
 
 The node-red node is highly customizable inside the editor by choosing and combining several components either as a widget or a popup window.
 
-**Finally the modal pickers work on iOS safari**
+**breaking change: Since 0.1.2 the popup size is determined by a grid selector instead of percentage of group width. You might update your config!** This provides better control over the size of the modal widget.
+
 For latest Updates see the change log in the end of this document.
 
 ## screenshots
@@ -140,6 +141,12 @@ iro.js offers a variety of different color picker styles. These can be combined 
             - maximum value (<40.000°K)
 
 ## Changelog
+
+### 0.1.2
+- modal pop size can be defined in width and hight independent of widget size
+- extra in- and output format for RGBW Leds `{r:255,g:255,b:255,w:255}` **experimental**
+- fix label of box height
+- fix for slider length of horizontal stacked sliders with custom size widget and no label.
 
 ### 0.1.1
 - initial color can be changed until a valid color is received

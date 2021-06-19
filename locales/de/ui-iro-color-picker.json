@@ -13,7 +13,8 @@
             "align" : "Ausrichtung",
             "initialColor" : "Startfarbe",
             "type" : "Typ",
-            "ofGroup": "% der Gruppe",
+            "popupSize": "Größe",
+            "ofGroup": "%",
             "button": "Schaltfäche",
             "color": "Farbe",
             "picked": "ausgewählt",
@@ -33,6 +34,7 @@
             "startingAngle": "Anfangswinkel",
             "direction": "Richtung",
             "sliderShows": "Regler zeigt",
+            "boxHeight":"Höhe",
             "min": "Min",
             "max": "Max"
         },
@@ -63,7 +65,8 @@
                 "Sättigung 0..100",
                 "Helligkeit 0..100",
                 "Temperatur 1000..40000",
-                "abstimmbares Wieß {v:100,t:40000}"],
+                "abstimmbares Wieß {v:100,t:40000}",
+                "RGBW Objekt {r:255,g:255,b:255,w:255}"],
             "layoutDirection": ["horizontal","vertical"]
         },
         "componentDropdown": {

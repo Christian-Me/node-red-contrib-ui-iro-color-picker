@@ -13,7 +13,8 @@
             "align" : "Align",
             "initialColor" : "Initial Color",
             "type" : "Type",
-            "ofGroup": "% of group",
+            "ofGroup": "%",
+            "popupSize": "Size",
             "button": "Button",
             "color": "Color",
             "picked": "picked",
@@ -33,6 +34,7 @@
             "startingAngle": "Starting Angle",
             "direction": "direction",
             "sliderShows": "Slider shows",
+            "boxHeight":"Height",
             "min": "Min",
             "max": "Max"
         },
@@ -63,7 +65,8 @@
                 "saturation 0..100",
                 "value 0..100",
                 "kelvin 1000..40000",
-                "tuneable white {v:100,t:40000}"],
+                "tuneable white {v:100,t:40000}",
+                "RGBW object {r:255,g:255,b:255,w:255}"],
             "layoutDirection": ["horizontal","vertical"]
         },
         "componentDropdown": {

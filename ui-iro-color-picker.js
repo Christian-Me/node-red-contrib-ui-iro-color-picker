@@ -37,14 +37,15 @@ module.exports = function(RED) {
                     }
 
                     .iro-color-label{
-                        padding:3px 6px 3px 6px;
+                        padding:0px 6px 3px 6px;
                     }
 
                     .iro-color-widget{
-                        padding:3px 6px 3px 6px;
+                        padding:unset;
                         display:flex;
                         margin:auto;
                         flex-direction: column;
+                        white-space:nowrap;
                     }
 
                     .iro-color-button{
@@ -77,7 +78,7 @@ module.exports = function(RED) {
 
                 <script type='text/javascript' src='ui-iro-color-picker/js/iro.min.js'></script>
                 <div class="iro-color-container" id="iro-color-container-${config.id}" style="display:flex; flex-direction: ${(config.placement==='above') ? "column" : "row"};" ng-init='init(` + configAsJson + `)'>
-                    <div ng-if="${config.label != ""}" class="iro-color-label" id="iro-color-label-${config.id}" style="display:flex; justify-content:${config.hAlign}; align-items:${config.vAlign};  width:${(config.placement==='above') ? `unset` : (config.labelWidth-12)+'px'}; height:${config.labelHeight}px;">${config.label}</div>
+                    <div ng-if="${config.label != ""}" class="iro-color-label" id="iro-color-label-${config.id}" style="display:flex; justify-content:${config.hAlign}; align-items:${config.vAlign};  width:${(config.placement==='above') ? `unset` : (config.labelProperties.x-12)+'px'}; height:${config.labelProperties.y-12}px;">${config.label}</div>
                     <!-- ${(config.placement==='above') ? "</br>" : ""} -->         
                 </div>
                 `;
@@ -107,6 +108,8 @@ module.exports = function(RED) {
                 // Add default values to older nodes (version 1.0.0)
                 config.stateField = config.stateField || 'payload';
                 config.enableField = config.enableField || 'enable';
+                var group = RED.nodes.getNode(config.group);
+                config.groupId = group.id;
 
                 getSiteProperties = function () {
                     var opts = {}
@@ -128,6 +131,7 @@ module.exports = function(RED) {
                     }
                     return opts
                 }
+                config.site = getSiteProperties();
 
                 var getUiControl = function () {
                     return {
@@ -146,130 +150,169 @@ module.exports = function(RED) {
                         sliderSize: 28
                     }
                 }
-    
-                var group = RED.nodes.getNode(config.group);
-                config.groupId = group.id;
-                config.site = getSiteProperties();
                 config.ui_control = getUiControl();
-                config.type = config.layout;
-                config.totalWidth = (config.width == 0) ? parseInt(group.config.width) : parseInt(config.width);
-                var widgetIndent = config.widgetIndent;
-                if (widgetIndent<1 && config.label!=="") widgetIndent=3;
-                if (config.placement==='above') widgetIndent=0;
-                if (config.label==="") {
-                    widgetIndent = 0;
-                    config.labelWidth = 12;
-                } else {
-                    config.labelWidth = parseInt(config.site.sizes.sx * widgetIndent + config.site.sizes.cx * (widgetIndent - 1)) - 12;
-                }
-                config.widgetWidth = (config.pickerType.startsWith('popup')) ? config.totalWidth : config.totalWidth-widgetIndent;
-                config.horizontalScale = 1;
-                config.widgetBox = {
-                    horizontalPx : parseInt(config.site.sizes.sx * config.widgetWidth + config.site.sizes.cx * (config.widgetWidth - 1)),
-                    verticalPx : 0,
-                    horizontalGrid : config.widgetWidth,
-                    verticalGrid : 0,
-                }
-                // calculate an ideal rectangle for all components
-                config.components.forEach(component => {
-                    switch (component.componentId) {
-                        case 'picker' :
-                            config.widgetBox.verticalGrid += config.widgetBox.horizontalGrid;
-                            config.widgetBox.verticalPx += config.widgetBox.horizontalPx;
-                            break;
-                        case 'box' :
-                            if (component.options!==undefined && component.options.hasOwnProperty('boxHeight') && component.options.boxHeight>0) {
-                                config.widgetBox.verticalGrid += Math.floor(component.options.boxHeight / (config.site.sizes.sy+config.site.sizes.cy)) + 1;
-                                config.widgetBox.verticalPx += component.options.boxHeight;
-                            } else {
-                                config.widgetBox.verticalGrid += config.widgetWidth;
-                                config.widgetBox.verticalPx += config.widgetBox.horizontalPx;
-                            }
-                            break;
-                        case 'slider':
-                            config.widgetBox.verticalGrid++;
-                            config.widgetBox.verticalPx += config.ui_control.sliderSize;
-                            break;
-                    }
-                    config.widgetBox.verticalPx += config.ui_control.margin;
-                });
-                config.widgetBox.verticalGrid = Math.floor(config.widgetBox.verticalPx / (config.site.sizes.sy+config.site.sizes.cy)) + 1;
-                config.widgetBox.verticalPx -= config.ui_control.margin; // one margin to much!
 
-                config.iroWidth = config.widgetBox.horizontalPx;
-                // swap height and width if arranged horizontally
-                if (config.layoutDirection==='horizontal') {
-                    let tempPx = config.widgetBox.verticalPx;
-                    config.widgetBox.verticalPx=config.widgetBox.horizontalPx;
-                    config.widgetBox.horizontalPx=tempPx;
-                    let tempGrid = config.widgetBox.verticalGrid;
-                    config.widgetBox.verticalGrid=config.widgetBox.horizontalGrid;
-                    config.widgetBox.horizontalGrid=tempGrid;
+    
+                /**
+                *  calculate horizontal dimension in pixel out of grid units
+                *   @param  {number} gridX  width in number of grids 
+                *   @return {number} dimension in pixel
+                **/
+                var getX = function(gridX) {
+                    return ((gridX===0) ? 0 : parseInt(config.site.sizes.sx * gridX + config.site.sizes.cx * (gridX - 1)));
                 }
-
-                // console.log('widgetBox',config.widgetBox);
-                // calculate auto hight and sizes for components exceeding available width
-                if (config.height == 0) { // auto scale
-                    config.height = config.widgetBox.verticalGrid;
-                    config.widgetHeightPx = config.widgetBox.verticalPx;
-                    if (!config.pickerType.startsWith('popup')) { // widget
-                        if (config.widgetWidth<config.widgetBox.horizontalGrid) { // rescale components to fit into available width
-                            config.horizontalScale=config.widgetWidth / config.widgetBox.horizontalGrid;
-                            config.height = Math.floor(config.height * config.horizontalScale) +1;
-                        }
-                    } else { // popups only need one grid for button
-                        config.height=1;
-                    }
-                    config.widgetHeightPx = config.widgetBox.verticalPx - 12 - 3;
-                } else {
-                    config.height =parseInt(config.height);
-                    config.widgetHeightPx = parseInt(config.site.sizes.sy * config.height + config.site.sizes.cy * (config.height - 1)) - 12;
-                    config.iroWidth = (config.layoutDirection==='horizontal') ? config.widgetHeightPx : config.widgetBox.horizontalPx;
-                    if (config.layoutDirection==='horizontal') config.widgetBox.verticalPx = config.iroWidth;
+                /**
+                *  calculate vertical dimension in pixel out of grid units
+                *   @param  {number} gridY  height in number of grids 
+                *   @return {number} dimension in pixel
+                **/
+                var getY = function(gridY) {
+                    return ((gridY===0) ? 0 : parseInt(config.site.sizes.sy * gridY + config.site.sizes.cy * (gridY - 1)));
                 }
-
-                // setup and scale width for popup
-                if (config.pickerType.startsWith('popup')) {
-                    config.buttonWidthPx = (config.buttonWidth>0) ? parseInt(config.site.sizes.sx * config.buttonWidth + config.site.sizes.cx * (config.buttonWidth-1)) - 12 : 100;
-                    config.height = 1;
-                    config.widgetWidthPx = config.widgetBox.horizontalPx;
-                    config.widthFactor=(!config.pickerSize || Number(config.pickerSize)==NaN) ? 1 : Number(config.pickerSize)/100;
-                    if (config.widthFactor<0.1) config.widthFactor=0.1;
-                    if (config.widthFactor>5) config.widthFactor=5;
-                    config.widgetWidthPx = config.widgetWidthPx * config.widthFactor;
-                    config.widgetHeightPx = config.widgetHeightPx * config.widthFactor;
-                    config.iroWidth = config.iroWidth * config.widthFactor;
-                    config.labelHeight = config.site.sizes.sy-12;
-                    if (config.layoutDirection==='horizontal') config.widgetBox.verticalPx *= config.widthFactor;
-                    if (config.layoutDirection==='vertical') config.widgetBox.horizontalPx *= config.widthFactor;
-                } else {
-                    config.widgetWidthPx = parseInt(config.site.sizes.sx * config.widgetWidth + config.site.sizes.cx * (config.widgetWidth - 1)); // - 12;
-                    config.iroWidth = (config.layoutDirection==='horizontal') ? config.widgetHeightPx-4 : (config.label==="") ? config.widgetWidthPx -20 : config.widgetWidthPx;
-                    config.labelHeight = (config.widgetHeightPx * config.horizontalScale) -12;
-                }
-
-
-                if (config.placement==='above') {
-                    config.widgetWidthPx -= 20;
-                    config.iroWidth -= 20;
-                    config.labelHeight = config.site.sizes.sy-12;
-                    if (!config.pickerType.startsWith('popup')) {
-                        if (config.layoutDirection==='horizontal') {
-                            config.labelWidth = config.widgetWidthPx;
-                            if (config.width==0) {
-                                config.widgetWidthPx = config.widgetBox.horizontalPx;
-                                config.labelWidth =  config.widgetWidthPx;   
-                            }
+                /**
+                *  calculate label properties
+                *   @param  {object} config  dashboard widget config
+                *   @return {object} label properties
+                **/
+                var getLabelProperties = function (config) {
+                    var label = {width:parseInt(config.width), height:1, indent: parseInt(config.widgetIndent), placement: config.placement};
+                    if (config.label!=="") {
+                        if (label.placement==='above') {
+                            label.width = (label.width>0) ? label.width : parseInt(group.config.width);
+                            label.indent = 0;
                         } else {
-                            config.labelWidth = config.iroWidth * config.horizontalScale;
+                            label.width = (label.indent>0) ? label.indent : 2;
+                            label.indent = label.width;
                         }
+                        label.x= getX(label.width);
+                        label.y= getY(label.height);
                     } else {
-                        config.width = (config.buttonWidth>0) ? config.buttonWidth : 2;
-                        config.labelWidth = config.buttonWidthPx;
+                        label.indent = 0;
                     }
-                    config.height++;
+                    console.log(`getLabelProperties(config)`,label);
+                    return label;
                 }
-                config.groupWidth = parseInt(config.site.sizes.sx * config.totalWidth + config.site.sizes.cx * (config.totalWidth - 1)) - 12;
+                /**
+                *  calculate widget properties
+                * 
+                *  **must be called after `getLabelProperties()`**
+                *   @param  {object} config  dashboard widget config
+                *   @return {object} widget properties
+                **/
+                var getWidgetProperties = function (config) {
+                    var widget = {width:parseInt(config.width), height:parseInt(config.height)};
+                    if (widget.width<1) { // auto mode
+                        widget.width = parseInt(group.config.width) - ((config.placement==='above') ? 0 : config.labelProperties.width);
+                        widget.height = (config.pickerType.startsWith('popup')) ? 1 : widget.width; // lets assume a square widget for now
+                        if (config.labelProperties.placement==='above') widget.height -= 1;
+                    }
+                    widget.x = getX(widget.width);
+                    widget.y = getY(widget.height);
+                    if (config.labelProperties.indent<1) {
+                        widget.x -=12; // if no label on the left reduce by label margin left
+                    } else {
+                        if (config.layoutDirection==='horizontal') {
+                            widget.y -= 12; // if vertically arranged reduce by label margin top;
+                        }
+                    }
+                    console.log(`getWidgetProperties(config)`,widget);
+                    return widget;
+                }
+                /**
+                *  calculate popup properties
+                *   @param  {object} config  dashboard widget config
+                *   @return {object} popup properties
+                **/
+                var getPopupProperties = function (config) {
+                    var popup = {width:parseInt(config.popupWidth || 0), height:parseInt(config.popupHeight || 0)};
+                    if (popup.width < 1) popup.width = parseInt(group.config.width);
+                    popup.x = getX(popup.width);
+                    popup.y = getY(popup.height);
+                    popup.buttonX = (config.buttonWidth>0) ? getX(config.buttonWidth) - 12 : 100;
+                    popup.buttonY = getY(1) - 12;
+
+
+                    console.log(`getPopupProperties(config)`,popup);
+                    return popup;
+                }
+                /**
+                *  calculate iro.js properties
+                *   @param  {object} config  dashboard widget config
+                *   @param  {number} baseWidth  target width of the iro widget in pixel
+                *   @return {object} iro properties
+                **/
+                var getIroProperties = function (config,baseWidth) {
+                    var iro = {scale:1,x:baseWidth,y:0,width:config.widgetProperties.width,height:1};
+                    config.components.forEach(component => {
+                        switch (component.componentId) {
+                            case 'picker' :
+                                iro.y += iro.x;
+                                break;
+                            case 'box' :
+                                if (component.options!==undefined && component.options.hasOwnProperty('boxHeight') && component.options.boxHeight>0) {
+                                    iro.y += component.options.boxHeight;
+                                } else {
+                                    iro.y += iro.x;
+                                }
+                                break;
+                            case 'slider':
+                                iro.y += config.ui_control.sliderSize;
+                                break;
+                        }
+                        iro.y += config.ui_control.margin;
+                    });
+                    iro.y -= config.ui_control.margin; // one margin to much!
+                    // swap x and y if arranged horizontally
+                    if (config.layoutDirection==='horizontal') {
+                        let tempPx = iro.x;
+                        iro.x=iro.y;
+                        iro.y=tempPx;
+                        if (iro.x>baseWidth-12) { // if rotated the horizontal size can exceed the available with
+                            iro.scale = (baseWidth-12) / iro.x;
+                            iro.x *= iro.scale;
+                            iro.y *= iro.scale;
+                        }
+                        iro.iroWidth =iro.y; 
+                    } else {
+                        iro.iroWidth =iro.x; 
+                    }
+                    // recalculate the necessary height to fit all components
+                    iro.height = Math.floor(iro.y/parseInt(config.site.sizes.sy + config.site.sizes.cy))+1;
+                    if (config.height>0 && iro.height<config.height) iro.height = parseInt(config.height);
+                    iro.width = Math.floor(iro.x/parseInt(config.site.sizes.sx + config.site.sizes.cx))+1;
+                    if (iro.width>(group.config.width-config.label.width)) iro.width = group.config.width-config.label.width;
+                    if (!config.pickerType.startsWith('popup')) {
+                        config.widgetProperties.x=iro.x;
+                        config.widgetProperties.width=iro.width;
+                    }
+                    console.log(`getIroProperties(config,${baseWidth})`,iro)
+                    return iro;
+                }
+
+                // calculate ui dimensions
+                console.log(config.label);
+                config.labelProperties = getLabelProperties(config);
+                config.widgetProperties = getWidgetProperties(config);
+                if (config.pickerType.startsWith('popup')) {
+                    config.popupProperties = getPopupProperties(config);
+                    config.iroProperties = getIroProperties(config, config.popupProperties.x);
+                    config.height = (config.placement==='above') ? 2 : 1;
+                    config.popupProperties.x = config.iroProperties.x;
+                    config.popupProperties.y = config.iroProperties.y;
+                    config.popupProperties.width = config.iroProperties.width;
+                    config.popupProperties.height = config.iroProperties.height;
+                } else {
+                    config.iroProperties = getIroProperties(config, (config.layoutDirection==='horizontal') ? config.widgetProperties.y : config.widgetProperties.x);
+                    config.widgetProperties.height = config.iroProperties.height;
+                    config.widgetProperties.y = config.iroProperties.y;
+                    config.height = config.widgetProperties.height + (config.placement==='above');
+                }
+                // correct label height to actual widget height
+                config.labelProperties.height = (config.placement==='above') ? 1 : config.widgetProperties.height;
+                config.labelProperties.y = (config.placement==='above') ? getY(1) : config.widgetProperties.y;
+                
+                config.width =  config.widgetProperties.width + ((config.placement==='above') ? 0 : config.labelProperties.width);
+                console.log(`size: ${config.width}x${config.height}`);
 
                 node.on("input", function(msg) {
                     node.topi = msg.topic;
@@ -353,6 +396,48 @@ module.exports = function(RED) {
                         const iroParameters = ['kelvin','red','green','blue','value','saturation','alpha','hue','index'];
 
                         /**
+                        *  convert hsv color model into rgbW
+                        *   @param  {object} input  {h:360,s:100,v:100}
+                        *   @return {void}
+                        */
+                    	// Source https://blog.saikoled.com/post/44677718712/how-to-convert-from-hsi-to-rgb-white
+                        var hsv2rgbw = function (input) {
+                            fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(8)); };
+                            var color = {r:0, g:0, b:0, w:0};
+                            var cos_h, cos_1047_h;
+                            var H = fmod(input.h,360); // cycle H around to 0-360 degrees
+                            H = 3.14159*H/180; // Convert to radians.
+                            var S = input.s / 100;
+                            S = S>0?(S<1?S:1):0; // clamp S and I to interval [0,1]
+                            var I = input.v / 100;
+                            I = I>0?(I<1?I:1):0;
+                        
+                            if(H < 2.09439) {
+                                cos_h = cos(H);
+                                cos_1047_h = cos(1.047196667-H);
+                                color.r = S*255*I/3*(1+cos_h/cos_1047_h);
+                                color.g = S*255*I/3*(1+(1-cos_h/cos_1047_h));
+                                color.b = 0;
+                                color.w = 255*(1-S)*I;
+                            } else if(H < 4.188787) {
+                                H = H - 2.09439;
+                                cos_h = cos(H);
+                                cos_1047_h = cos(1.047196667-H);
+                                color.g = S*255*I/3*(1+cos_h/cos_1047_h);
+                                color.b = S*255*I/3*(1+(1-cos_h/cos_1047_h));
+                                color.r = 0;
+                                color.w = 255*(1-S)*I;
+                            } else {
+                                H = H - 4.188787;
+                                cos_h = cos(H);
+                                cos_1047_h = cos(1.047196667-H);
+                                color.b = S*255*I/3*(1+cos_h/cos_1047_h);
+                                color.r = S*255*I/3*(1+(1-cos_h/cos_1047_h));
+                                color.g = 0;
+                                color.w = 255*(1-S)*I;
+                            }
+                        }
+                        /**
                         *  read $scope.colorToSend form picker color object
                         *   @param  {object} color  iro.js color object
                         *   @return {void}
@@ -415,10 +500,10 @@ module.exports = function(RED) {
                         */
                         var createIroButton = function () {
                             $scope.btn = document.createElement("div");
-                            $scope.btn.setAttribute("class", "md-raised md-button md-ink-ripple");
+                            $scope.btn.setAttribute("class", "md-raised md-button md-ink-ripple iro-color-button");
                             $scope.btn.setAttribute("type", "button");
                             $scope.btn.setAttribute("id", "iro-modal-button_"+$scope.config.id);
-                            $scope.btn.setAttribute("style", `background-color: ${$scope.iroColorValue}; min-width: unset; width:${$scope.config.buttonWidthPx}px; margin-top:0px`);
+                            $scope.btn.setAttribute("style", `background-color: ${$scope.iroColorValue}; min-width: unset; width:${$scope.config.popupProperties.buttonX}px; height:${$scope.config.popupProperties.buttonY}px;margin-top:0px`);
                             $scope.btn.innerHTML = "&nbsp;"
                             $scope.btn.addEventListener("click",  function(e) {
                                 $scope.colorButtonPress(e);
@@ -439,10 +524,10 @@ module.exports = function(RED) {
                         var createIro = function () {
                             //console.log("createIro",$scope.config);
                             if (!document.querySelector(iroDiv)) {
-                                // <div id='ui_iro_color_picker-{{$id}}' style="width:${config.widgetWidthPx}px; background-color:unset; border:unset;"></div>
+                                // <div id='ui_iro_color_picker-{{$id}}' style="width:${config.widgetProperties.x}px; background-color:unset; border:unset;"></div>
                                 var pickerDiv = document.createElement("div");
                                 pickerDiv.setAttribute("class", 'iro-color-widget');
-                                pickerDiv.setAttribute("width", `${$scope.config.widgetWidthPx}px`);
+                                pickerDiv.setAttribute("style", `width:${$scope.config.widgetProperties.x}px;`);
                                 pickerDiv.setAttribute("id", 'ui_iro_color_picker-' + $scope.$eval('$id'));
                                 document.getElementById(`iro-color-container-${$scope.config.id}`).appendChild(pickerDiv);
                             }
@@ -488,7 +573,7 @@ module.exports = function(RED) {
                                 if (index < $scope.opts.length-1) {
                                     let spacerDiv = document.createElement("div");
                                     spacerDiv.style.height = `${$scope.config.ui_control.margin}px`;
-                                    spacerDiv.style.width = `${$scope.config.widgetWidthPx}px`;
+                                    spacerDiv.style.width = `${$scope.config.widgetProperties.x}px`;
                                     document.getElementById('ui_iro_color_picker-' + $scope.$eval('$id')).appendChild(spacerDiv);
                                 }
                             });
@@ -504,9 +589,9 @@ module.exports = function(RED) {
                                 config.components.forEach((component,index) => {
                                     if (component.options.sliderType==='kelvin' || component.options.sliderType==='value' ) {
                                         $scope.opts.push({
-                                            width: config.iroWidth * config.horizontalScale, // config.widgetWidthPx,
-                                            handleRadius : 8 * config.horizontalScale,
-                                            padding : 6 * config.horizontalScale,
+                                            width: config.iroProperties.iroWidth,
+                                            handleRadius : 8 * config.iroProperties.scale,
+                                            padding : 6 * config.iroProperties.scale,
                                             color: $scope.iroColorValue,
                                             layoutDirection: config.layoutDirection,
                                             layout: [{
@@ -528,9 +613,9 @@ module.exports = function(RED) {
                                         }
                                     }
                                     $scope.opts=[{
-                                        width: config.iroWidth * config.horizontalScale, // config.widgetWidthPx,
-                                        handleRadius : 8 * config.horizontalScale,
-                                        padding : 6 * config.horizontalScale,
+                                        width: config.iroProperties.iroWidth,
+                                        handleRadius : 8 * config.iroProperties.scale,
+                                        padding : 6 * config.iroProperties.scale,
                                         color: $scope.iroColorValue,
                                         layoutDirection: config.layoutDirection,
                                         layout: [],
@@ -712,20 +797,20 @@ module.exports = function(RED) {
                             switch (pickerType) {
                                 case 'popupCG':
                                     widgetPos = document.getElementById(`iro-color-container-${$scope.config.id}`).getBoundingClientRect();
-                                    positionTop = widgetPos.y + widgetPos.height/2- $scope.config.widgetBox.verticalPx/2;
-                                    positionLeft = widgetPos.x + widgetPos.width/2 - $scope.config.widgetBox.horizontalPx/2;
+                                    positionTop = widgetPos.y + widgetPos.height/2- $scope.config.popupProperties.y/2;
+                                    positionLeft = widgetPos.x + widgetPos.width/2 - $scope.config.popupProperties.x/2;
                                     break;
                                 case 'popupCC':
                                     widgetPos = document.getElementById(`iro-modal-button_${$scope.config.id}`).getBoundingClientRect();
-                                    positionTop = widgetPos.y + widgetPos.height/2- $scope.config.widgetBox.verticalPx/2;
-                                    positionLeft = widgetPos.x + widgetPos.width/2 - $scope.config.widgetBox.horizontalPx/2;
+                                    positionTop = widgetPos.y + widgetPos.height/2- $scope.config.popupProperties.y/2;
+                                    positionLeft = widgetPos.x + widgetPos.width/2 - $scope.config.popupProperties.x/2;
                                 break;
                             }
 
-                            var boxVerticalPx = $scope.config.widgetBox.verticalPx + $scope.config.ui_control.margin;
-                            var boxHorizontalPx = $scope.config.widgetBox.horizontalPx + 6;
+                            var boxVerticalPx = $scope.config.popupProperties.y + $scope.config.ui_control.margin;
+                            var boxHorizontalPx = $scope.config.popupProperties.x + 6;
 
-                            console.log('popup',$scope.config.widgetBox);
+                            console.log('popup',$scope.config.popupProperties);
 
                             if (positionTop + boxVerticalPx > window.innerHeight) positionTop = window.innerHeight - boxVerticalPx;
                             if (positionLeft + boxHorizontalPx > window.innerWidth) positionLeft = window.innerWidth - boxHorizontalPx;
