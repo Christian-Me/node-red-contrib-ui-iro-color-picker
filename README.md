@@ -5,7 +5,7 @@ Color picker node utilizing the [iro.js](https://iro.js.org) widget.
 
 The node-red node is highly customizable inside the editor by choosing and combining several components either as a widget or a popup window.
 
-**breaking change: Since 0.1.2 the popup size is determined by a grid selector instead of percentage of group width. You might update your config!** This provides better control over the size of the modal widget.
+**breaking change: Since 0.1.2 the popup size is determined by a grid selector instead of percentage of group width. You might update your config!** This provides better control over the size of the modal widget independent of the widget size.
 
 For latest Updates see the change log in the end of this document.
 
@@ -52,6 +52,8 @@ Send `msg.payload` to this node to change the color of the color picker widget. 
 - HSVA object: {h: 360, s: 100, v: 50, a: 1}
 and
 - Tuneable white `{v:100,t:6000}` **see output**
+- RGBW object: `{r:255,g:255,b:255,w:255}`  **see output**
+- HSI object: `{h:360,s:100,i:100}`  **see output**
 
 
 in addition the following input formats are supported to set individual parameters
@@ -78,6 +80,16 @@ Node will send the color value as `msg.payload`. The format can be one of the in
     If **tunable white** is selected as output The Input can be `msg.value`, `msg.kelvin` or `{v:100,t:6000}`. 
     
     **Please select a *value* and *kelvin* picker ONLY**
+
+- RGBW color object `{r:255,g:255,b:255,w:255}` usable for RGBW LEDs
+
+    RGB LEDs are not capable to display unsaturated colors correctly as in light mixing white is missing as it is provided in subtractive color mixing by the paper. Mixing RGB 100% also don't give a nice white. So to get full spectrum lights RGBW Leds are often used.
+    **Important:** make sure that if you send in a RGBW object the RGB part is full saturated. (one component, R, G or B is always 0)
+
+- HSI object: `{h:360,s:100,i:100}`
+
+    simplified intensity is calculated by avg(r,g,b) instead value=max(r,g,b) in hsv model.
+    code is borrowed from [chroma.js](github.com/gka/chroma.js/) *nice library for a future conrib-node*
 
 ## General configuration
 
@@ -141,6 +153,9 @@ iro.js offers a variety of different color picker styles. These can be combined 
             - maximum value (<40.000°K)
 
 ## Changelog
+
+### 0.1.3
+- extra in- and output format for hsi color model `{h:360,s:100,i:100}` **experimental**
 
 ### 0.1.2
 - modal pop size can be defined in width and hight independent of widget size

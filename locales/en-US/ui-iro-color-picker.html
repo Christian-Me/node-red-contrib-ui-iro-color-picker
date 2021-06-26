@@ -37,7 +37,8 @@
         <li><b>as widget</b> placed on the dashboard</li>
         <li><b>as popup</b> as a modal dialog triggered by a button. The Modal can be placed either centered to the button, group or window.</li>
         <ul>
-            <li><b>width</b> specifies the with of the popup relative to the group width</li>
+            <li><b>size</b> specifies the size of the popup in grid units. **auto** od **0** defaults to group width</li>
+            <li><b>width</b> specifies the with of the popup relative scale of the size or to the group width</li>
             <li><b>button</b> determines the width of the button in grid units</li>
             <li><b>color</b> specifies the background color of the popup</li>
             <li>if <b>picked</b> is selected the background color follows the selected color</li>
@@ -99,23 +100,25 @@
     <h3>Supported Formats</h3>
     <p>send and received as <code>msg.payload</code></p>
     <ul>
-        <li>Hex string: "#ff0000"</li>
-        <li>Hex alpha string: "#ff0000ff"</li>
-        <li>Shorthand hex string: "#f00"</li>
-        <li>Shorthand hex alpha string: "#f00f"</li>
-        <li>RGB string: "rgb(255, 0, 0)"</li>
-        <li>RGBA string: "rgba(255, 0, 0, 1)"</li>
-        <li>Percentage RGB string: "rgb(100%, 0%, 0%)"</li>
-        <li>Percentage RGBA string: "rgba(100%, 0%, 0%, 100%)"</li>
-        <li>RGB object: <code>{r: 255, g: 0, b: 0}</code></li>
-        <li>RGBA object: <code>{r: 255, g: 0, b: 0, a: 1}</code></li>
-        <li>HSL string: "hsl(360, 50%, 100%)"</li>
-        <li>HSLA string: "hsla(360, 50%, 100%, 1)"</li>
-        <li>HSL object: <code>{h: 360, s: 50, l: 100}</code></li>
-        <li>HSLA object: <code>{h: 360, s: 50, l: 100, a: 1}</code></li>
-        <li>HSV object: <code>{h: 360, s: 100, v: 50}</code></li>
-        <li>HSVA object: <code>{h: 360, s: 100, v: 50, a: 1}</code></li>
+        <li>Hex string: "#ffffff"</li>
+        <li>Hex alpha string: "#ffffffff"</li>
+        <li>Shorthand hex string: "#fff"</li>
+        <li>Shorthand hex alpha string: "#ffff"</li>
+        <li>RGB string: "rgb(255, 255, 255)"</li>
+        <li>RGBA string: "rgba(255, 255, 255, 1)"</li>
+        <li>Percentage RGB string: "rgb(100%, 100%, 100%)"</li>
+        <li>Percentage RGBA string: "rgba(100%, 100%, 100%, 100%)"</li>
+        <li>RGB object: <code>{r: 255, g: 255, b: 255}</code></li>
+        <li>RGBA object: <code>{r: 255, g: 255, b: 255, a: 1}</code></li>
+        <li>HSL string: "hsl(360, 100%, 100%)"</li>
+        <li>HSLA string: "hsla(360, 100%, 100%, 1)"</li>
+        <li>HSL object: <code>{h: 360, s: 100, l: 100}</code></li>
+        <li>HSLA object: <code>{h: 360, s: 100, l: 100, a: 1}</code></li>
+        <li>HSV object: <code>{h: 360, s: 100, v: 100}</code></li>
+        <li>HSVA object: <code>{h: 360, s: 100, v: 100, a: 1}</code></li>
         <li>Tuneable white <code>{v:100,t:6000}</code></li>
+        <li>RGBW object: <code>{r: 255, g: 255, b: 255, w: 255}</code></li>
+        <li>HSI object: <code>{h: 360, s: 100, i: 100}</code></li>
         <li>Numeric value according to the output value</li>
     </ul>
     <p>in addition the following input formats are supported to set individual parameters</p>
