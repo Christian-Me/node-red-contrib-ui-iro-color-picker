@@ -313,11 +313,232 @@ module.exports = function(RED) {
                 
                 config.width =  config.widgetProperties.width + ((config.placement==='above') ? 0 : config.labelProperties.width);
                 //console.log(`size: ${config.width}x${config.height}`);
+                switch (config.outFormat) {
+                    case 'rgbw':
+                        config.frontendOutFormat = 'hsv';
+                        break;
+                    case 'hsi':
+                        config.frontendOutFormat = 'rgb';
+                        break;
+                    default:
+                        config.frontendOutFormat = config.outFormat;
+                        break;
+                }
 
                 node.on("input", function(msg) {
                     node.topi = msg.topic;
                 });
-            
+
+                /**
+                *  check if all of the given keys are present in an object
+                *   @param  {object} objectToTest Object to test
+                *   @param  {array} keys Array of stings containing the property names
+                *   @return {boolean} = true if ALL given keys are present
+                */
+                var hasProperties = function (objectToTest,keys) {
+                    for (var key of keys) {
+                        if (!objectToTest.hasOwnProperty(key)) return false;
+                    }
+                    return true;
+                }
+                /**
+                *  limit value between min and max value
+                *   @param  {number} x Value
+                *   @param  {number} min = 0 Minimum
+                *   @param  {number} max = 1 Maximum
+                *   @return {number} adjusted value
+                */
+                var limit = function (x, min=0, max=1) {
+                    return x < min ? min : x > max ? max : x;
+                }
+                const {min,sqrt,acos,cos,atan} = Math;
+                const PI = Math.PI;
+                const TWOPI = Math.PI*2;
+                const PITHIRD = Math.PI/3;
+                /**
+                *  convert hsi into rgb
+                *   @param  {object} input {h:360,s:100,i:100}
+                *   @return {object} {r:255,g:255,b:255}
+                */
+                var hsi2rgb = function (input) {
+                    let h = input.h;
+                    let s = input.s / 100;
+                    let i = input.i / 100;
+                    let r,g,b;
+                
+                    if (isNaN(h)) h = 0;
+                    if (isNaN(s)) s = 0;
+                    // normalize hue
+                    if (h > 360) h -= 360;
+                    if (h < 0) h += 360;
+                    h /= 360;
+                    if (h < 1/3) {
+                        b = (1-s)/3;
+                        r = (1+s*cos(TWOPI*h)/cos(PITHIRD-TWOPI*h))/3;
+                        g = 1 - (b+r);
+                    } else if (h < 2/3) {
+                        h -= 1/3
+                        r = (1-s)/3
+                        g = (1+s*cos(TWOPI*h)/cos(PITHIRD-TWOPI*h))/3
+                        b = 1 - (r+g)
+                    } else {
+                        h -= 2/3
+                        g = (1-s)/3
+                        b = (1+s*cos(TWOPI*h)/cos(PITHIRD-TWOPI*h))/3
+                        r = 1 - (g+b)
+                    }
+                    var output = {
+                        r: limit(i*r*3) * 255,
+                        g: limit(i*g*3) * 255,
+                        b: limit(i*b*3) * 255
+                    }
+                    //console.log(`hsi2rgb`, input,output);
+                    return output;
+                }
+                /**
+                *  convert rgb into hsi
+                *   @param  {object} input  {r:255,g:255,b:255}
+                *   @return {object} {h:360,s:100,i:100}
+                */
+                var rgb2hsi = function (input) {
+                    var r = input.r / 255;
+                    var g = input.g / 255;
+                    var b = input.b / 255;
+
+                    let h = 0;
+                    const min_ = min(r,g,b);
+                    const i = (r+g+b) / 3;
+                    const s = i > 0 ? 1 - min_/i : 0;
+                    if (s === 0) {
+                        h = 0; 
+                    } else {
+                        h = ((r-g)+(r-b)) / 2;
+                        h /= sqrt((r-g)*(r-g) + (r-b)*(g-b));
+                        h = acos(h);
+                        if (b > g) {
+                            h = TWOPI - h;
+                        }
+                        h /= TWOPI;
+                    }
+                    var output = {
+                        h: limit(h)*360,
+                        s: limit(s)*100,
+                        i: limit(i)*100
+                    }
+                    //console.log(`rgb2hsi`, input,output);
+                    return (output);
+
+                }
+                /**
+                *  convert rgbw color model into hsv
+                *   @param  {object} input {r:255,g:255,b:255}
+                *   @return {object} {h:360,s:100,v:100}
+                    */
+                var rgbw2hsv = function (input) {
+                    let r = limit(input.r,0,255);
+                    let g = limit(input.g,0,255);
+                    let b = limit(input.b,0,255);
+                    let w = limit(input.w,0,255);
+
+                    // calculate hue out of the rgb component only
+                    let H = 0;
+                    const min_ = min(r,g,b);
+                    const i = (r+g+b) / 3;
+                    const s = i > 0 ? 1 - min_/i : 0;
+                    if (s === 0) {
+                        H = 0; 
+                    } else {
+                        H = ((r-g)+(r-b)) / 2;
+                        H /= sqrt((r-g)*(r-g) + (r-b)*(g-b));
+                        H = acos(H);
+                        if (b > g) {
+                            H = TWOPI - H;
+                        }
+                        H /= TWOPI;
+                    }
+                        
+                    // calculate saturation and value out of RGBW
+
+                    let argH;
+                    let argI;
+                    // check what sector we are in
+                    if (b == 0) {
+                        // between 0 and 2*pi/3
+                        argH = (g+r) / (2*r-g);
+                        argI = r;
+                    }
+                    if (r == 0) {
+                        // between 2*pi/3 and 4*pi/3
+                        argH = (b+g) / (2*g-b);
+                        argI = g;
+                    }
+                    if (g == 0) {
+                        // between 4*pi/3 and 6*pi/3
+                        argH = (r+b) / (2*b-r);
+                        argI = b;
+                    }
+
+                    var I = (((3 * argI) / (1 + 1/argH)) + w) / 255;
+                    var S = 1 - w / (255*I)
+
+                    var output = {
+                        h : limit(H) * 360,
+                        s : limit(S) * 100,
+                        v : limit(I) * 100
+                    }
+                    //console.log(`rgbw2hsv`, input,output);
+                    return output;
+                }
+                /**
+                *  convert hsv color model into rgbW
+                *   @param  {object} input  {h:360,s:100,i:100}
+                *   @return {object} {r:255,g:255,b:255}
+                */
+                // Source https://blog.saikoled.com/post/44677718712/how-to-convert-from-hsi-to-rgb-white
+                var hsv2rgbw = function (input) {
+                    fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(8)); };
+                    var color = {r:0, g:0, b:0, w:0};
+                    var cos_h, cos_1047_h;
+                    var H = fmod(input.h,360); // cycle H around to 0-360 degrees
+                    H = 3.14159*H/180; // Convert to radians.
+                    var S = limit(input.s / 100);
+                    var I = limit(input.v / 100);
+                    var r,g,b,w;
+                
+                    if(H < 2.09439) {
+                        cos_h = cos(H);
+                        cos_1047_h = cos(1.047196667-H);
+                        r = S*255*I/3*(1+cos_h/cos_1047_h);
+                        g = S*255*I/3*(1+(1-cos_h/cos_1047_h));
+                        b = 0;
+                        w = 255*(1-S)*I;
+                    } else if(H < 4.188787) {
+                        H = H - 2.09439;
+                        cos_h = cos(H);
+                        cos_1047_h = cos(1.047196667-H);
+                        g = S*255*I/3*(1+cos_h/cos_1047_h);
+                        b = S*255*I/3*(1+(1-cos_h/cos_1047_h));
+                        r = 0;
+                        w = 255*(1-S)*I;
+                    } else {
+                        H = H - 4.188787;
+                        cos_h = cos(H);
+                        cos_1047_h = cos(1.047196667-H);
+                        b = S*255*I/3*(1+cos_h/cos_1047_h);
+                        r = S*255*I/3*(1+(1-cos_h/cos_1047_h));
+                        g = 0;
+                        w = 255*(1-S)*I;
+                    }
+                    var output = {
+                        r: limit(r,0,255),
+                        g: limit(g,0,255),
+                        b: limit(b,0,255),
+                        w: limit(w,0,255)
+                    }
+                    //console.log(`hsv2rgbw`, input,output);
+                    return output;
+                }
+                
                 var sizes = ui.getSizes();
                 var html = HTML(config);                    // *REQUIRED* !!DO NOT EDIT!!
                 var done = ui.addWidget({                   // *REQUIRED* !!DO NOT EDIT!!
@@ -342,7 +563,7 @@ module.exports = function(RED) {
                     beforeEmit: function(msg, value) {
                         const iroParameters = ['kelvin','red','green','blue','value','saturation','alpha','hue','index'];
                         var newMsg = {};
-                        // console.log('beforeEmit: ',msg,value);
+                        
                         if (msg) {
                             // Copy the socket id from the original input message. 
                             newMsg.socketid = msg.socketid;
@@ -353,11 +574,21 @@ module.exports = function(RED) {
                             try {
                                 // Get the new state value from the specified message field
                                 newMsg.state = RED.util.getMessageProperty(msg, config.stateField || "payload");
+
+                                if (hasProperties(newMsg.state,['r','g','b','w'])) {
+                                    newMsg.state=rgbw2hsv(newMsg.state);    
+                                } else {
+                                    if (hasProperties(msg.state,['h','s','i'])) {
+                                        newMsg.state = hsi2rgb(newMsg.state);    
+                                    }
+                                }
+
                                 iroParameters.forEach(paramter => {
                                     if (msg.hasOwnProperty(paramter)) {
                                         newMsg[paramter] = RED.util.getMessageProperty(msg, paramter);
                                     }
                                 });
+                                console.log('beforeEmit: ',msg,newMsg);
                             } 
                             catch(err) {
                                 // No problem because the state field is optional ...
@@ -371,17 +602,28 @@ module.exports = function(RED) {
                                 // No problem because the enable value is optional ...
                             }
                         }
-                        // console.log('beforeEmit: ', newMsg);
+                        //console.log('beforeEmit: ', newMsg);
                         return { msg: newMsg };
                     },
 
                     beforeSend: function (msg, orig) {
-                        // console.log('beforeSend:',msg,orig);
+                        //console.log('beforeSend:',msg,orig,config.outFormat);
                         if (orig) {
                             var newMsg = {};
+
                             // Store the switch state in the specified msg state field
                             RED.util.setMessageProperty(newMsg, config.stateField, orig.msg.state, true)
                             //orig.msg = newMsg;
+                            // convert 
+                            switch (config.outFormat) {
+                                case 'rgbw':
+                                    newMsg.payload = hsv2rgbw(orig.msg.state);
+                                    break;
+                                case 'hsi':
+                                    newMsg.payload = rgb2hsi(orig.msg.state);
+                                    break;
+                            }
+                            node.status({green:"red", shape:'dot', text:orig.msg.rgb});
                             var topic = RED.util.evaluateNodeProperty(config.topic,config.topicType || "str",node,msg) || node.topi;
                             if (topic) { newMsg.topic = topic; }
                             return newMsg;
@@ -395,209 +637,12 @@ module.exports = function(RED) {
                         const iroParameters = ['kelvin','red','green','blue','value','saturation','alpha','hue','index'];
 
                         /**
-                        *  limit value between min and max value
-                        *   @param  {number} x Value
-                        *   @param  {number} min = 0 Minimum
-                        *   @param  {number} max = 1 Maximum
-                        *   @return {number} adjusted value
-                        */
-                        var limit = function (x, min=0, max=1) {
-                            return x < min ? min : x > max ? max : x;
-                        }
-                        const {min,sqrt,acos,cos,atan} = Math;
-                        const PI = Math.PI;
-                        const TWOPI = Math.PI*2;
-                        const PITHIRD = Math.PI/3;
-                        /**
-                        *  convert hsi into rgb
-                        *   @param  {object} input {h:360,s:100,i:100}
-                        *   @return {object} {r:255,g:255,b:255}
-                        */
-                        var hsi2rgb = function (input) {
-                            let h = input.h;
-                            let s = input.s / 100;
-                            let i = input.i / 100;
-                            let r,g,b;
-                        
-                            if (isNaN(h)) h = 0;
-                            if (isNaN(s)) s = 0;
-                            // normalize hue
-                            if (h > 360) h -= 360;
-                            if (h < 0) h += 360;
-                            h /= 360;
-                            if (h < 1/3) {
-                                b = (1-s)/3;
-                                r = (1+s*cos(TWOPI*h)/cos(PITHIRD-TWOPI*h))/3;
-                                g = 1 - (b+r);
-                            } else if (h < 2/3) {
-                                h -= 1/3
-                                r = (1-s)/3
-                                g = (1+s*cos(TWOPI*h)/cos(PITHIRD-TWOPI*h))/3
-                                b = 1 - (r+g)
-                            } else {
-                                h -= 2/3
-                                g = (1-s)/3
-                                b = (1+s*cos(TWOPI*h)/cos(PITHIRD-TWOPI*h))/3
-                                r = 1 - (g+b)
-                            }
-                            var output = {
-                                r: limit(i*r*3) * 255,
-                                g: limit(i*g*3) * 255,
-                                b: limit(i*b*3) * 255
-                            }
-                            console.log(`hsi2rgb`, input,output);
-                            return output;
-                        }
-                        /**
-                        *  convert rgb into hsi
-                        *   @param  {object} input  {r:255,g:255,b:255}
-                        *   @return {object} {h:360,s:100,i:100}
-                        */
-                        var rgb2hsi = function (input) {
-                            var r = input.r / 255;
-                            var g = input.g / 255;
-                            var b = input.b / 255;
-
-                            let h = 0;
-                            const min_ = min(r,g,b);
-                            const i = (r+g+b) / 3;
-                            const s = i > 0 ? 1 - min_/i : 0;
-                            if (s === 0) {
-                                h = 0; 
-                            } else {
-                                h = ((r-g)+(r-b)) / 2;
-                                h /= sqrt((r-g)*(r-g) + (r-b)*(g-b));
-                                h = acos(h);
-                                if (b > g) {
-                                    h = TWOPI - h;
-                                }
-                                h /= TWOPI;
-                            }
-                            var output = {
-                                h: limit(h)*360,
-                                s: limit(s)*100,
-                                i: limit(i)*100
-                            }
-                            console.log(`rgb2hsi`, input,output);
-                            return (output);
-
-                        }
-                        /**
-                        *  convert rgbw color model into hsv
-                        *   @param  {object} input {r:255,g:255,b:255}
-                        *   @return {object} {h:360,s:100,v:100}
-                         */
-                        var rgbw2hsv = function (input) {
-                            let r = limit(input.r,0,255);
-                            let g = limit(input.g,0,255);
-                            let b = limit(input.b,0,255);
-                            let w = limit(input.w,0,255);
-
-                            // calculate hue out of the rgb component only
-                            let H = 0;
-                            const min_ = min(r,g,b);
-                            const i = (r+g+b) / 3;
-                            const s = i > 0 ? 1 - min_/i : 0;
-                            if (s === 0) {
-                                H = 0; 
-                            } else {
-                                H = ((r-g)+(r-b)) / 2;
-                                H /= sqrt((r-g)*(r-g) + (r-b)*(g-b));
-                                H = acos(H);
-                                if (b > g) {
-                                    H = TWOPI - H;
-                                }
-                                H /= TWOPI;
-                            }
-                             
-                            // calculate saturation and value out of RGBW
-
-                            let argH;
-                            let argI;
-                            // check what sector we are in
-                            if (b == 0) {
-                                // between 0 and 2*pi/3
-                                argH = (g+r) / (2*r-g);
-                                argI = r;
-                            }
-                            if (r == 0) {
-                                // between 2*pi/3 and 4*pi/3
-                                argH = (b+g) / (2*g-b);
-                                argI = g;
-                            }
-                            if (g == 0) {
-                                // between 4*pi/3 and 6*pi/3
-                                argH = (r+b) / (2*b-r);
-                                argI = b;
-                            }
-
-                            var I = (((3 * argI) / (1 + 1/argH)) + w) / 255;
-                            var S = 1 - w / (255*I)
-
-                            var output = {
-                                h : limit(H) * 360,
-                                s : limit(S) * 100,
-                                v : limit(I) * 100
-                            }
-                            console.log(`rgbw2hsv`, input,output);
-                            return output;
-                        }
-                        /**
-                        *  convert hsv color model into rgbW
-                        *   @param  {object} input  {h:360,s:100,i:100}
-                        *   @return {object} {r:255,g:255,b:255}
-                        */
-                    	// Source https://blog.saikoled.com/post/44677718712/how-to-convert-from-hsi-to-rgb-white
-                        var hsv2rgbw = function (input) {
-                            fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(8)); };
-                            var color = {r:0, g:0, b:0, w:0};
-                            var cos_h, cos_1047_h;
-                            var H = fmod(input.h,360); // cycle H around to 0-360 degrees
-                            H = 3.14159*H/180; // Convert to radians.
-                            var S = limit(input.s / 100);
-                            var I = limit(input.v / 100);
-                            var r,g,b,w;
-                        
-                            if(H < 2.09439) {
-                                cos_h = cos(H);
-                                cos_1047_h = cos(1.047196667-H);
-                                r = S*255*I/3*(1+cos_h/cos_1047_h);
-                                g = S*255*I/3*(1+(1-cos_h/cos_1047_h));
-                                b = 0;
-                                w = 255*(1-S)*I;
-                            } else if(H < 4.188787) {
-                                H = H - 2.09439;
-                                cos_h = cos(H);
-                                cos_1047_h = cos(1.047196667-H);
-                                g = S*255*I/3*(1+cos_h/cos_1047_h);
-                                b = S*255*I/3*(1+(1-cos_h/cos_1047_h));
-                                r = 0;
-                                w = 255*(1-S)*I;
-                            } else {
-                                H = H - 4.188787;
-                                cos_h = cos(H);
-                                cos_1047_h = cos(1.047196667-H);
-                                b = S*255*I/3*(1+cos_h/cos_1047_h);
-                                r = S*255*I/3*(1+(1-cos_h/cos_1047_h));
-                                g = 0;
-                                w = 255*(1-S)*I;
-                            }
-                            var output = {
-                                r: limit(r,0,255),
-                                g: limit(g,0,255),
-                                b: limit(b,0,255),
-                                w: limit(w,0,255)
-                            }
-                            console.log(`hsv2rgbw`, input,output);
-                            return output;
-                        }
-                        /**
                         *  read $scope.colorToSend form picker color object
                         *   @param  {object} color  iro.js color object
                         *   @return {void}
                         */
                         var updateColorToSend = function (color) {
-                            switch ($scope.config.outFormat) {
+                            switch ($scope.config.frontendOutFormat) {
                                 case 'tuneable':
                                     if ($scope.colorToSend===undefined) $scope.colorToSend={};
                                     if (color.sliderType==="value") {
@@ -607,14 +652,16 @@ module.exports = function(RED) {
                                         $scope.colorToSend.t = color.kelvin;
                                     };                                    
                                     break;
+                                /*
                                 case 'rgbw':
                                     $scope.colorToSend = hsv2rgbw(color.hsv);
                                     break;
                                 case 'hsi':
                                     $scope.colorToSend = rgb2hsi(color.rgb);
                                     break;
+                                */
                                 default:
-                                    $scope.colorToSend = color[$scope.config.outFormat];
+                                    $scope.colorToSend = color[$scope.config.frontendOutFormat];
                             }
                         }
 
@@ -633,7 +680,7 @@ module.exports = function(RED) {
                                 if ($scope.btn) $scope.btn.style["background-color"] = colorHex8String;
                                 if ($scope.modal) $scope.modal.style.backgroundColor = color.hexString + Math.floor($scope.config.backgroundDim / 100*255).toString(16);
                                 if (send && !$scope.sendHold) {
-                                    $scope.send({state:$scope.colorToSend});
+                                    $scope.send({state:$scope.colorToSend,rgb:color.hexString});
                                     $scope.lastSent = JSON.stringify($scope.colorToSend);
                                     if ($scope.config.outputLimit && $scope.config.outputLimit>0) {
                                         $scope.sendHold = true;
@@ -641,7 +688,7 @@ module.exports = function(RED) {
                                     }
                                 }
                             }
-                            if ($scope.config.outFormat==="tuneable" && color.sliderType==="kelvin") {
+                            if ($scope.config.frontendOutFormat==="tuneable" && color.sliderType==="kelvin") {
                                 $scope.iroColorPicker.forEach(picker => {
                                     if (picker.color.sliderType==='value') {
                                         let value = picker.color.value;
@@ -695,7 +742,7 @@ module.exports = function(RED) {
                                 $scope.iroColorPicker.forEach(picker => picker.destroy());
                             }
                             var minTemperature = 3000;
-                            if ($scope.config.outFormat==="tuneable") { // find min temperature
+                            if ($scope.config.frontendOutFormat==="tuneable") { // find min temperature
                                 $scope.opts.forEach(opts => {
                                     if (opts.layout[0].options.sliderType==='kelvin') minTemperature=opts.layout[0].options.minTemperature;
                                 });
@@ -707,7 +754,7 @@ module.exports = function(RED) {
                                 $scope.iroColorPicker.push(new iro.ColorPicker(iroDiv, opts));
                                 $scope.iroColorPicker[index].color.sliderType=opts.layout[0].options.sliderType;
                                 
-                                if ($scope.config.outFormat==="tuneable") { // default settings for tuneable sliders
+                                if ($scope.config.frontendOutFormat==="tuneable") { // default settings for tuneable sliders
                                     $scope.iroColorPicker[index].color.kelvin = minTemperature;
                                     if ($scope.iroColorPicker[index].color.sliderType==="value") $scope.iroColorPicker[index].color.value = 0
                                 }
@@ -743,7 +790,7 @@ module.exports = function(RED) {
                             $scope.config = config;
                             iroDiv = '#ui_iro_color_picker-' + $scope.$eval('$id');
 
-                            if ($scope.config.outFormat==="tuneable") {
+                            if ($scope.config.frontendOutFormat==="tuneable") {
                                 if ($scope.iroColorValue===undefined)  $scope.iroColorValue = config.iroColorValue || {r: 255, g: 255, b: 255};
                                 $scope.opts = [];
                                 config.components.forEach((component,index) => {
@@ -802,7 +849,7 @@ module.exports = function(RED) {
                                 disable(!msg.enable);
                                 return;
                             }                      
-                            console.log('color received:',msg);
+                            //console.log('color received:',msg);
 
                             // utilize the iro.Color API build in iro.js and update $scope.iroColorValue to 64bit RGBA string
                             if ($scope.iroColor === undefined) {
@@ -812,9 +859,9 @@ module.exports = function(RED) {
                             if (msg.hasOwnProperty('state')){
                                 if (typeof msg.state === "number") {
                                     try {
-                                        $scope.iroColor[$scope.config.outFormat] = msg.state;
+                                        $scope.iroColor[$scope.config.frontendOutFormat] = msg.state;
                                     } catch (e) {
-                                        console.warn(`color conversion failed! Expected "${$scope.config.outFormat}" value, received:`,msg.state);		// catch any errors that may occur and display them in the web browsers console
+                                        console.warn(`color conversion failed! Expected "${$scope.config.frontendOutFormat}" value, received:`,msg.state);		// catch any errors that may occur and display them in the web browsers console
                                         return;
                                     }
                                 } else {
@@ -825,6 +872,7 @@ module.exports = function(RED) {
                                             }
                                             return true;
                                         }
+                                        /*
                                         if (hasProperties(msg.state,['r','g','b','w'])) {
                                             $scope.iroColor.set(rgbw2hsv(msg.state));    
                                         } else {
@@ -834,6 +882,8 @@ module.exports = function(RED) {
                                                 $scope.iroColor.set(msg.state);
                                             }
                                         }
+                                        */
+                                        $scope.iroColor.set(msg.state);
                                     } catch (e) {
                                         console.warn(`color conversion failed! received:`,msg.state);		// catch any errors that may occur and display them in the web browsers console
                                         return;
@@ -890,7 +940,7 @@ module.exports = function(RED) {
                             $scope.iroColorValue = iroColorValue;
                             
                             // update color picker if available
-                            if ($scope.config.outFormat!=="tuneable") {
+                            if ($scope.config.frontendOutFormat!=="tuneable") {
                                 if ($scope.iroColorPicker!==undefined && $scope.iroColorPicker[0]!==undefined && $scope.iroColorPicker[0].color!==undefined){
                                     $scope.iroColorPicker[0].color.set($scope.iroColorValue);
                                 }
@@ -903,10 +953,10 @@ module.exports = function(RED) {
                                     newColor.value = msg.state.v;
                                     newColor.kelvin = msg.state.t;
                                 }
-                                console.log('new color:',newColor,msg);
+                                //console.log('new color:',newColor,msg);
                                 $scope.config.components.forEach((component,index) => {
                                     if ($scope.iroColorPicker[index].color.sliderType==='value') {
-                                        console.log('newKelvin',newColor);
+                                        //console.log('newKelvin',newColor);
                                         $scope.iroColorPicker[index].color.kelvin = newColor.kelvin;
                                         $scope.iroColorPicker[index].color.value = newColor.value;
                                     } else {

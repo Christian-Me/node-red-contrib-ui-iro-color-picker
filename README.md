@@ -5,7 +5,7 @@ Color picker node utilizing the [iro.js](https://iro.js.org) widget.
 
 The node-red node is highly customizable inside the editor by choosing and combining several components either as a widget or a popup window.
 
-**breaking change: Since 0.1.2 the popup size is determined by a grid selector instead of percentage of group width. You might update your config!** This provides better control over the size of the modal widget independent of the widget size.
+**breaking change: Since 0.1.2 the popup size is determined by an own selector instead of percentage of group width. You might update your config!** This provides better control over the size of the modal widget independent of the widget size.
 
 For latest Updates see the change log in the end of this document.
 
@@ -56,7 +56,7 @@ and
 - HSI object: `{h:360,s:100,i:100}`  **see output**
 
 
-in addition the following input formats are supported to set individual parameters
+in addition the following numeric input formats are supported to set individual parameters
 - `msg.hue` 0 - 360
 - `msg.value` 0 - 100
 - `msg.saturation` 0 - 100
@@ -72,6 +72,7 @@ Send `msg.enable` **false** to disable the widget.
 
 ## Outputs
 Node will send the color value as `msg.payload`. The format can be one of the input formats.
+The supported formats of iro.js are expanded by 3 formats, especially to handle RGB(W) LEDs:
 
 - Tuneable white `{v:100,t:6000}` **experimental feature**
     
@@ -81,12 +82,12 @@ Node will send the color value as `msg.payload`. The format can be one of the in
     
     **Please select a *value* and *kelvin* picker ONLY**
 
-- RGBW color object `{r:255,g:255,b:255,w:255}` usable for RGBW LEDs
+- RGBW color object `{r:255,g:255,b:255,w:255}` usable for RGBW LEDs **experimental feature**
 
     RGB LEDs are not capable to display unsaturated colors correctly as in light mixing white is missing as it is provided in subtractive color mixing by the paper. Mixing RGB 100% also don't give a nice white. So to get full spectrum lights RGBW Leds are often used.
     **Important:** make sure that if you send in a RGBW object the RGB part is full saturated. (one component, R, G or B is always 0)
 
-- HSI object: `{h:360,s:100,i:100}`
+- HSI object: `{h:360,s:100,i:100}` **experimental feature**
 
     simplified intensity is calculated by avg(r,g,b) instead value=max(r,g,b) in hsv model.
     code is borrowed from [chroma.js](github.com/gka/chroma.js/) *nice library for a future conrib-node*
@@ -119,7 +120,7 @@ Node will send the color value as `msg.payload`. The format can be one of the in
     - **when released** send a message when the user release the mouse button
     - **on user interaction** send on every user interaction
         - the output can be limited either by a maximum frequency or dynamically
-        - if *when confirmed* is checked new messages are blocked until the last message is confirmed by the backend. This should adopt the updates according to the backend speed and the network
+        - if *when confirmed* is checked new messages are blocked until the last message is confirmed by the backend. This should adopt the updates according to the backend speed and the network. A minimum frequency can be specified to avoid a block if a messages was not confirmed or not detected as confirmed.
         - if unchecked a maximum update frequency in messages per second can be defined.
 - **payload** choose the desired output format.
 - **topic** topic to be added to the message
@@ -153,6 +154,9 @@ iro.js offers a variety of different color picker styles. These can be combined 
             - maximum value (<40.000°K)
 
 ## Changelog
+
+### 0.1.4
+- moved extra formats support to the backend to reduced frontend code size
 
 ### 0.1.3
 - extra in- and output format for hsi color model `{h:360,s:100,i:100}` **experimental**
