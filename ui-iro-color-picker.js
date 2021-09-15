@@ -175,7 +175,7 @@ module.exports = function(RED) {
                 *   @return {object} label properties
                 **/
                 var getLabelProperties = function (config) {
-                    var label = {width:parseInt(config.width), height:1, indent: parseInt(config.widgetIndent), placement: config.placement};
+                    var label = {width:parseInt(config.width), height:1, indent: parseInt(config.widgetIndent), placement: config.placement,x:0, y:0};
                     if (config.label!=="") {
                         if (label.placement==='above') {
                             label.width = (label.width>0) ? label.width : parseInt(group.config.width);
@@ -184,11 +184,13 @@ module.exports = function(RED) {
                             label.width = (label.indent>0) ? label.indent : 2;
                             label.indent = label.width;
                         }
-                        label.x= getX(label.width);
-                        label.y= getY(label.height);
                     } else {
                         label.indent = 0;
+                        label.width = 0;
+                        label.height = 0;
                     }
+                    label.x= getX(label.width);
+                    label.y= getY(label.height);
                     //console.log(`getLabelProperties(config)`,label);
                     return label;
                 }
@@ -296,7 +298,7 @@ module.exports = function(RED) {
                 if (config.pickerType.startsWith('popup')) {
                     config.popupProperties = getPopupProperties(config);
                     config.iroProperties = getIroProperties(config, config.popupProperties.x);
-                    config.height = (config.placement==='above') ? 2 : 1;
+                    config.height = (config.label!=='' && config.placement==='above') ? 2 : 1;
                     config.popupProperties.x = config.iroProperties.x;
                     config.popupProperties.y = config.iroProperties.y;
                     config.popupProperties.width = config.iroProperties.width;

@@ -251,7 +251,7 @@
                     var width = v||0;
                     var currentGroup = $('#node-input-group').val()|| this.group;
                     var groupNode = RED.nodes.node(currentGroup);
-                    valid = !groupNode || +width <= +groupNode.width-this.widgetIndent;
+                    valid = !groupNode || +width <= +groupNode.width-((this.label!=='')?this.widgetIndent:0);
                     $("#node-input-sizeButtonWidth").toggleClass("input-error",!valid);
                     return valid;
                 }},
