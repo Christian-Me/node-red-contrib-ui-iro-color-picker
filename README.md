@@ -5,9 +5,8 @@ Color picker node utilizing the [iro.js](https://iro.js.org) widget.
 
 The node-red node is highly customizable inside the editor by choosing and combining several components either as a widget or a popup window.
 
-**breaking change: Since 0.1.2 the popup size is determined by an own selector instead of percentage of group width. You might update your config!** This provides better control over the size of the modal widget independent of the widget size.
-
 For latest Updates see the change log in the end of this document.
+For color conversion the [node-red-contrib-chroma](https://flows.nodered.org/node/node-red-contrib-chroma) node is a good companion.
 
 ## screenshots
 
@@ -155,6 +154,10 @@ iro.js offers a variety of different color picker styles. These can be combined 
 
 ## Changelog
 
+### 0.1.6 bugfix
+- fix for partial (color component) updates
+### 0.1.5 bugfix
+- fix for label taking space even if empty
 ### 0.1.4
 - moved extra formats support to the backend to reduced frontend code size
 

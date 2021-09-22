@@ -590,7 +590,7 @@ module.exports = function(RED) {
                                         newMsg[paramter] = RED.util.getMessageProperty(msg, paramter);
                                     }
                                 });
-                                console.log('beforeEmit: ',msg,newMsg);
+                                //console.log('beforeEmit: ',msg,newMsg);
                             } 
                             catch(err) {
                                 // No problem because the state field is optional ...
@@ -625,7 +625,7 @@ module.exports = function(RED) {
                                     newMsg.payload = rgb2hsi(orig.msg.state);
                                     break;
                             }
-                            node.status({green:"red", shape:'dot', text:orig.msg.rgb});
+                            node.status({fill:"green", shape:'dot', text:orig.msg.rgb});
                             var topic = RED.util.evaluateNodeProperty(config.topic,config.topicType || "str",node,msg) || node.topi;
                             if (topic) { newMsg.topic = topic; }
                             return newMsg;
@@ -654,27 +654,21 @@ module.exports = function(RED) {
                                         $scope.colorToSend.t = color.kelvin;
                                     };                                    
                                     break;
-                                /*
-                                case 'rgbw':
-                                    $scope.colorToSend = hsv2rgbw(color.hsv);
-                                    break;
-                                case 'hsi':
-                                    $scope.colorToSend = rgb2hsi(color.rgb);
-                                    break;
-                                */
                                 default:
                                     $scope.colorToSend = color[$scope.config.frontendOutFormat];
                             }
                         }
-
+                        
                         /**
-                        *  updates the color if it is changed. Updates button and background if necessary
-                        *   @param  {object} color  iro.js color object
-                        *   @param  {boolean} send  send message to backend if true
-                        *   @return {void}
-                        */
+                         *  updates the color if it is changed. Updates button and background if necessary
+                         *   @param  {object} color  iro.js color object
+                         *   @param  {boolean} send  send message to backend if true
+                         *   @return {void}
+                         */
                         var colorUpdate = function (color, send = true) {
                             var colorHex8String = color.hex8String;
+                            if ($scope.iroColor !== undefined) $scope.iroColor.set(colorHex8String);
+                            
                             updateColorToSend(color);
                             //console.log('colorUpdate:',$scope.colorToSend);
                             if ($scope.iroColorValue!==colorHex8String || (send && $scope.lastSent!==JSON.stringify($scope.colorToSend))) { // limit updates to "new" colors
@@ -855,7 +849,8 @@ module.exports = function(RED) {
 
                             // utilize the iro.Color API build in iro.js and update $scope.iroColorValue to 64bit RGBA string
                             if ($scope.iroColor === undefined) {
-                                $scope.iroColor = new iro.Color();
+                                //console.log('new iro conversion',$scope.iroColorValue || $scope.initColor)
+                                $scope.iroColor = new iro.Color($scope.iroColorValue || $scope.initColor);
                             }
 
                             if (msg.hasOwnProperty('state')){
@@ -868,23 +863,6 @@ module.exports = function(RED) {
                                     }
                                 } else {
                                     try {
-                                        var hasProperties = function (objectToTest,keys) {
-                                            for (var key of keys) {
-                                                if (!objectToTest.hasOwnProperty(key)) return false;
-                                            }
-                                            return true;
-                                        }
-                                        /*
-                                        if (hasProperties(msg.state,['r','g','b','w'])) {
-                                            $scope.iroColor.set(rgbw2hsv(msg.state));    
-                                        } else {
-                                            if (hasProperties(msg.state,['h','s','i'])) {
-                                                $scope.iroColor.set(hsi2rgb(msg.state));    
-                                            } else {
-                                                $scope.iroColor.set(msg.state);
-                                            }
-                                        }
-                                        */
                                         $scope.iroColor.set(msg.state);
                                     } catch (e) {
                                         console.warn(`color conversion failed! received:`,msg.state);		// catch any errors that may occur and display them in the web browsers console
@@ -909,11 +887,12 @@ module.exports = function(RED) {
                             if ($scope.config.outputConfirmed && $scope.sendHold && $scope.lastSent===JSON.stringify(msg.state)) {
                                 delete $scope.sendHold;
                             }
-
+                            /*
                             if (msg.socketid) {
                                 //console.log('msg discarded: socketid present - exiting');
                                 return;
                             }
+                            */
                             // exit here during 'sliding'
                             if ($scope.inputStarted) {
                                 //console.log('msg discarded: input started - exiting');
