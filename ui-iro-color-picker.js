@@ -76,7 +76,7 @@ module.exports = function(RED) {
                     }
                 </style>
 
-                <script type='text/javascript' src='ui-iro-color-picker/js/iro.min.js'></script>
+                <script type='text/javascript' src='ui-iro-color-picker/js/iro.js'></script>
                 <div class="iro-color-container" id="iro-color-container-${config.id}" style="display:flex; flex-direction: ${(config.placement==='above') ? "column" : "row"};" ng-init='init(` + configAsJson + `)'>
                     <div ng-if="${config.label != ""}" class="iro-color-label" id="iro-color-label-${config.id}" style="display:flex; justify-content:${config.hAlign}; align-items:${config.vAlign};  width:${(config.placement==='above') ? `unset` : (config.labelProperties.x-12)+'px'}; height:${config.labelProperties.y-12}px;">${config.label}</div>
                     <!-- ${(config.placement==='above') ? "</br>" : ""} -->         
@@ -747,6 +747,7 @@ module.exports = function(RED) {
                             $scope.iroColorPicker = [];
                             $scope.opts.forEach((opts,index) => {
                                 opts.color = $scope.iroColorValue;
+                                console.log('new color picker',opts);
                                 $scope.iroColorPicker.push(new iro.ColorPicker(iroDiv, opts));
                                 $scope.iroColorPicker[index].color.sliderType=opts.layout[0].options.sliderType;
                                 

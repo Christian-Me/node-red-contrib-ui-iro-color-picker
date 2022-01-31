@@ -6,6 +6,7 @@ Color picker node utilizing the [iro.js](https://iro.js.org) widget.
 The node-red node is highly customizable inside the editor by choosing and combining several components either as a widget or a popup window.
 
 For latest Updates see the change log in the end of this document.
+
 For color conversion the [node-red-contrib-chroma](https://flows.nodered.org/node/node-red-contrib-chroma) node is a good companion.
 
 ## screenshots
@@ -63,7 +64,7 @@ in addition the following numeric input formats are supported to set individual 
 - `msg.yellow` 0 - 255
 - `msg.blue` 0 - 255
 - `msg.alpha` 0 - 1
-- `msg.kelvin` 2.000 - 40.0000
+- `msg.kelvin` 1.000 - 40.0000
 
 if a numeric `msg.payload` is received it is assumed that the value corresponds to the output format. **In this case the output format has to be set to a single value format!**
 
@@ -154,10 +155,15 @@ iro.js offers a variety of different color picker styles. These can be combined 
 
 ## Changelog
 
+### 0.1.7
+- color temperature can now go down to 1000k
+
 ### 0.1.6 bugfix
 - fix for partial (color component) updates
+
 ### 0.1.5 bugfix
 - fix for label taking space even if empty
+  
 ### 0.1.4
 - moved extra formats support to the backend to reduced frontend code size
 
